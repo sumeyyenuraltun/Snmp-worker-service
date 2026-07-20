@@ -1,0 +1,6 @@
+@SNMP.API_HostAddress = http://localhost:5012
+
+GET {{SNMP.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
