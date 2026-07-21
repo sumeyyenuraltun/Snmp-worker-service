@@ -3,5 +3,6 @@
   <Project Path="SNMP.BLL/Snmp.Business.csproj" Id="b4eacad2-6c5a-4e41-b781-06da8abfb9c4" />
   <Project Path="SNMP.DAL/Snmp.DataAccess.csproj" Id="06b41142-4549-4caf-9d97-17b68f5440de" />
   <Project Path="SNMP.ENTITY/SNMP.ENTITY.csproj" DisplayName="Snmp.Entity" />
-  <Project Path="SNMP.WORKER_SERVICE/Snmp.WorkerService.csproj" Id="b8c13b11-3d7a-48a8-99d9-23c1d9d1e3e9" />
+  <Project Path="Snmp.Infrastructure/Snmp.Infrastructure.csproj" Id="78090eef-2ec1-4ec0-b0c5-0b7513f80577" />
+  <Project Path="SNMP.WORKER_SERVICE/Snmp.ConsumerWorker.csproj" Id="b8c13b11-3d7a-48a8-99d9-23c1d9d1e3e9" />
 </Solution>

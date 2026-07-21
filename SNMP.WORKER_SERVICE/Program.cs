@@ -1,7 +1,8 @@
-using SNMP.WORKER_SERVICE;
+//using Snmp.WorkerService;
 
 var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddHostedService<Worker>();
+
+//builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();
 host.Run();
