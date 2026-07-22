@@ -1,8 +1,12 @@
 //using Snmp.WorkerService;
 
+using Snmp.EventWorker.Services;
+
 var builder = Host.CreateApplicationBuilder(args);
 
-//builder.Services.AddHostedService<Worker>();
+//builder.Services.AddInfrastructure(builder.Configuration).WithSecretVault().WithStorage();
+
+builder.Services.AddHostedService<RabbitMQEventConsumerService>();
 
 var host = builder.Build();
 host.Run();

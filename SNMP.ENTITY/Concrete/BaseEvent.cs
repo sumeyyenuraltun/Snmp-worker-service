@@ -15,6 +15,11 @@ namespace Snmp.Entity.Concrete
 
         public int AggregateId { get;  set;  }
 
-       
+        protected BaseEvent()
+        {
+            EventType = this.GetType().Name;
+
+            OccuredAt = DateTime.UtcNow;
+        }
     }
 }

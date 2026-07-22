@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SNMP.ENTITY.Events
+namespace SNMP.ENTITY.Events.Device
 {
     public class DeviceCreated : BaseEvent
     {
@@ -11,5 +11,13 @@ namespace SNMP.ENTITY.Events
         public string DeviceName { get; }
         public int Port { get; }
         public DateTime CreatedAt { get; }
+
+        public DeviceCreated(string ipAddress, string deviceName, int port, DateTime createdAt)
+        {
+            IpAddress = ipAddress;
+            DeviceName = deviceName;
+            Port = port;
+            CreatedAt = createdAt;
+        }
     }
 }

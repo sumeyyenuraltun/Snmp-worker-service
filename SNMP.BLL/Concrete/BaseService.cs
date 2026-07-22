@@ -1,5 +1,6 @@
 ﻿using SNMP.BLL.Abstract;
 using SNMP.DAL.Abstract;
+using SNMP.ENTITY.Abstract;
 using SNMP.ENTITY.Concrete;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,12 @@ namespace SNMP.BLL.Concrete
     public class BaseService<TEntity> : IBaseService<TEntity> where TEntity : BaseEntity
     {
         private readonly IBaseRepository<TEntity> _repository;
+        private readonly IEventPublisher _eventPublisher;
 
-        public BaseService(IBaseRepository<TEntity> repository)
+        public BaseService(IBaseRepository<TEntity> repository, IEventPublisher eventPublisher)
         {
             _repository = repository;
+            _eventPublisher = eventPublisher;
         }
 
         public void Add(TEntity entity)

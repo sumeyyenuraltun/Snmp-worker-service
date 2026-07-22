@@ -110,7 +110,7 @@ namespace Snmp.Infrastructure.Messaging
 
                 var body = Encoding.UTF8.GetBytes(json);
 
-                var routingKey = $"lighthouse.{@events.EventType.ToLowerInvariant()}";
+                var routingKey = $"device.{@events.EventType.ToLowerInvariant()}";
 
                 var basicProperties = new BasicProperties
                 {

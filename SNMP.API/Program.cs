@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Snmp.Business.Mapping;
 using Snmp.Infrastructure.Configuration;
 using Snmp.Infrastructure.Messaging;
 using SNMP.BLL.Abstract;
@@ -7,6 +8,7 @@ using SNMP.DAL.Abstract;
 using SNMP.DAL.Concrete;
 using SNMP.DAL.Context;
 using SNMP.ENTITY.Abstract;
+using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,10 +31,12 @@ builder.Services.AddScoped<ISnmpLogService, SnmpLogService>();
 
 builder.Services.AddSingleton<IEventPublisher , RabbitMQEventPublisher>();
 
+builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MapProfile>());
 
 builder.Services.Configure<RabbitMQSetting>(
     builder.Configuration.GetSection(RabbitMQSetting.SecitonName) 
 );
+
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
