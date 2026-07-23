@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Snmp.EventWorker.EventHandler.Device;
 using Snmp.Infrastructure.Configuration;
 using SNMP.ENTITY.Events.Device;
 using System;
@@ -18,7 +19,7 @@ namespace Snmp.EventWorker.Services
             public string EventType { get; set; } = string.Empty;
             public DateTime OccuredAt { get; set; }
             public int AggregateId { get; set; }
-            public Object Payload { get; set; } = new();
+            public object Data { get; set; } = new();
         }
 
         private readonly ILogger<RabbitMQEventConsumerService> _logger;
@@ -26,12 +27,18 @@ namespace Snmp.EventWorker.Services
         private readonly IServiceProvider _serviceProvider;
         private IConnection? _connection;
         private IChannel? _channel;
+        private readonly JsonSerializerOptions _jsonSerializerOptions;
 
-        public RabbitMQEventConsumerService(ILogger<RabbitMQEventConsumerService> logger, IOptions<RabbitMQSetting> settings, IServiceProvider serviceProvider )
+        public RabbitMQEventConsumerService(ILogger<RabbitMQEventConsumerService> logger, IOptions<RabbitMQSetting> settings, IServiceProvider serviceProvider, JsonSerializerOptions jsonSerializerOptions )
         {
             _logger = logger;
             _settings = settings.Value;
-            this._serviceProvider = serviceProvider;
+            _serviceProvider = serviceProvider;
+            _jsonSerializerOptions =new  JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true
+            };
         }
 
         private async Task InitializeRabbitMqAsync(CancellationToken cancellationToken)
@@ -78,7 +85,7 @@ namespace Snmp.EventWorker.Services
                     cancellationToken: cancellationToken
                     );
 
-                _logger.LogInformation("RabbitMQ queue bound to exchange with routing key pattern : snmp.device.*")
+                _logger.LogInformation("RabbitMQ queue bound to exchange with routing key pattern : snmp.device.*");
             }
             catch(Exception ex)
             {
@@ -89,7 +96,7 @@ namespace Snmp.EventWorker.Services
 
         private async Task DeviceCreatedEventAsync(EventMessage eventMessage, CancellationToken cancellationToken)
         {
-            var deviceCreatedEvent = JsonSerializer.Deserialize<DeviceCreated>(eventMessage.Payload.ToString() ?? string.Empty);
+            var deviceCreatedEvent = JsonSerializer.Deserialize<DeviceCreated>(eventMessage.Data.ToString() ?? string.Empty, _jsonSerializerOptions);
 
             if(deviceCreatedEvent == null)
             {
@@ -109,7 +116,7 @@ namespace Snmp.EventWorker.Services
         {
             try
             {
-                var eventMessage = JsonSerializer.Deserialize<EventMessage>(message);
+                var eventMessage = JsonSerializer.Deserialize<EventMessage>(message, _jsonSerializerOptions);
                 if(eventMessage == null)
                 {
                     _logger.LogInformation("Failed to deserialize event message. RoutingKey: {RoutingKey}", routingKey);
@@ -153,9 +160,9 @@ namespace Snmp.EventWorker.Services
                     var body = ea.Body.ToArray();
                     var message = System.Text.Encoding.UTF8.GetString(body);
                     var routingKey = ea.RoutingKey;
-                    _logger.LogDebug("Received message with RoutingKey : {RoutingKey}", routingKey);
+                    _logger.LogDebug("Received message with RoutingKey : {RoutingKey}, Body: {Body}", routingKey, message);
                     await ProcessEventAsync(message, routingKey, stoppingToken);
-                    _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
+                   // _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
                 }
                 catch(Exception ex)
                 {
@@ -164,11 +171,37 @@ namespace Snmp.EventWorker.Services
                 
             };
 
+            await _channel.BasicConsumeAsync(
+                queue: _settings.QueueName,
+                autoAck: true,
+                consumer: consumer,
+                cancellationToken: stoppingToken
+                );
+
+            _logger.LogInformation("RabbitMQEventConsumerService is consuming from queue : {QueueName}", _settings.QueueName);
+
+            await Task.Delay(Timeout.Infinite, stoppingToken);
+
         }
 
-        public override Task StopAsync(CancellationToken cancellationToken)
+        public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            return base.StopAsync(cancellationToken);
+            _logger.LogInformation("RabbitMQEventConsumerService is stopping");
+
+            if (_channel != null) { 
+                await _channel.CloseAsync(cancellationToken);
+                await _channel.DisposeAsync();
+            }
+
+            if (_connection != null)
+            {
+                await _connection.CloseAsync(cancellationToken);
+                await _connection.DisposeAsync();
+            }
+
+            await base.StopAsync(cancellationToken);
+
+            _logger.LogInformation("RabbitMQEventConsumerService has stopped");
         }
 
     }
