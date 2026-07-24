@@ -8,7 +8,7 @@ using SNMP.DAL.Context;
 
 #nullable disable
 
-namespace SNMP.DAL.Migrations
+namespace Snmp.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -44,6 +44,12 @@ namespace SNMP.DAL.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("PollingEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("PollingIntervalSeconds")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Port")
                         .HasColumnType("integer");
 
@@ -55,13 +61,20 @@ namespace SNMP.DAL.Migrations
                     b.ToTable("Devices");
                 });
 
-            modelBuilder.Entity("SNMP.ENTITY.Concrete.SnmpLog", b =>
+            modelBuilder.Entity("SNMP.ENTITY.Concrete.SnmpCredential", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AuthPassword")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("AuthProtocol")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -72,33 +85,36 @@ namespace SNMP.DAL.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Oid")
+                    b.Property<string>("PrivacyPassword")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("PrivacyProtocol")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SecurityLevel")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Value")
+                    b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DeviceId");
+                    b.HasIndex("DeviceId")
+                        .IsUnique();
 
-                    b.ToTable("SnmpLogs");
+                    b.ToTable("SnmpCredentials");
                 });
 
-            modelBuilder.Entity("SNMP.ENTITY.Concrete.SnmpLog", b =>
+            modelBuilder.Entity("SNMP.ENTITY.Concrete.SnmpCredential", b =>
                 {
                     b.HasOne("SNMP.ENTITY.Concrete.Device", "Device")
-                        .WithMany("SnmpLogs")
-                        .HasForeignKey("DeviceId")
+                        .WithOne("Credential")
+                        .HasForeignKey("SNMP.ENTITY.Concrete.SnmpCredential", "DeviceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -107,7 +123,8 @@ namespace SNMP.DAL.Migrations
 
             modelBuilder.Entity("SNMP.ENTITY.Concrete.Device", b =>
                 {
-                    b.Navigation("SnmpLogs");
+                    b.Navigation("Credential")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

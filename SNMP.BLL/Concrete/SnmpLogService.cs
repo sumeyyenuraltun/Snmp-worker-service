@@ -26,7 +26,7 @@ namespace SNMP.BLL.Concrete
             _eventPublisher = eventPublisher;
         }
 
-        public async Task Add(AddSnmpLogDTO addSnmpLogDTO, CancellationToken cancellationToken)
+        public async Task AddAsync(AddSnmpLogDTO addSnmpLogDTO, CancellationToken cancellationToken)
         {
             await _eventPublisher.PublishAsync(new SnmpLogCreationRequested(
                 addSnmpLogDTO.DeviceId,
@@ -39,7 +39,7 @@ namespace SNMP.BLL.Concrete
             {
                 var snmpLogEntity = _mapper.Map<SnmpLog>(addSnmpLogDTO);
 
-                _snmpLogDAL.Add(snmpLogEntity);
+                await _snmpLogDAL.AddAsync(snmpLogEntity);
 
                 await _eventPublisher.PublishAsync(new SnmpLogCreated(
                     snmpLogEntity.DeviceId,
@@ -64,46 +64,15 @@ namespace SNMP.BLL.Concrete
             }
         }
 
-        public void Delete(int id)
-        {
-            var existingLog = _snmpLogDAL.Get(s => s.Id == id);
-
-            if (existingLog == null)
-                throw new Exception("Silinecek log bulunamadı!");
-
-            existingLog.IsActive = false;
-            existingLog.UpdatedAt = DateTime.UtcNow;
-
-            _snmpLogDAL.Update(existingLog);
-        }
-
-        public List<SnmpLogDTO> GetAll()
-        {
-            var logs = _snmpLogDAL.GetAll(s => s.IsActive == true);
+        public async Task<List<SnmpLogDTO>> GetLastLogsAsync(int count = 100)
+        { 
+            var logs = await _snmpLogDAL.GetLastAsync(count);
             return _mapper.Map<List<SnmpLogDTO>>(logs);
         }
 
-        public SnmpLogDTO GetById(int id)
-        {
-            var log = _snmpLogDAL.Get(s => s.Id == id && s.IsActive == true);
-
-            if (log == null)
-                return null;
-
-            return _mapper.Map<SnmpLogDTO>(log);
-        }
-
-        public void Update(UpdateSnmpLogDTO updateSnmpLogDTO)
-        {
-            var existingLog = _snmpLogDAL.Get(s => s.Id == updateSnmpLogDTO.Id);
-
-            if (existingLog == null)
-                throw new Exception("Güncellenecek log bulunamadı!");
-
-            _mapper.Map(updateSnmpLogDTO, existingLog);
-            existingLog.UpdatedAt = DateTime.UtcNow;
-
-            _snmpLogDAL.Update(existingLog);
-        }
+        
+        
+       
+        
     }
 }

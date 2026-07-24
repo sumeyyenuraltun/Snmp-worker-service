@@ -17,85 +17,56 @@ namespace SNMP.BLL.Concrete
     {
         private readonly IDeviceDAL _deviceDAL;
         private readonly IMapper _mapper;
-        private readonly IEventPublisher _eventPublisher;
-        public DeviceService(IDeviceDAL deviceDAL , IMapper mapper, IEventPublisher eventPublisher)
+        public DeviceService(IDeviceDAL deviceDAL , IMapper mapper)
         {
             _deviceDAL = deviceDAL;
             _mapper = mapper;
-            _eventPublisher = eventPublisher;
         }
 
-        public async Task Add(AddDeviceDTO addDeviceDTO, CancellationToken cancellationToken = default)
+        public async Task AddAsync(AddDeviceDTO dto)
         {
-            await _eventPublisher.PublishAsync(new DeviceCreationRequested(
-                addDeviceDTO.IpAddress,
-                addDeviceDTO.DeviceName,
-                addDeviceDTO.Port
-            ), cancellationToken);
+            var entity = _mapper.Map<Device>(dto);
 
-            try
-            {
-                var deviceEntity = _mapper.Map<Device>(addDeviceDTO);
-
-                _deviceDAL.Add(deviceEntity);
-
-                await _eventPublisher.PublishAsync(new DeviceCreated(
-                    deviceEntity.IpAddress,
-                    deviceEntity.DeviceName,
-                    deviceEntity.Port,
-                    deviceEntity.CreatedAt
-                ), cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                await _eventPublisher.PublishAsync(new DeviceCreationFailed(
-                    addDeviceDTO.IpAddress,
-                    addDeviceDTO.DeviceName,
-                    addDeviceDTO.Port,
-                    ex.Message,
-                    ex.StackTrace,
-                    0
-                ), cancellationToken);
-
-                throw;
-            }
+            await _deviceDAL.AddAsync(entity);
         }
 
-        public void Update(UpdateDeviceDTO deviceUpdateDTO)
+        public async Task UpdateAsync(UpdateDeviceDTO dto)
         {
-            var existingDevice = _deviceDAL.Get(d => d.Id == deviceUpdateDTO.Id);
+            var entity = await _deviceDAL.GetAsync(x => x.Id == dto.Id);
 
-            if (existingDevice == null)
-                throw new Exception("Güncellenecek cihaz bulunamadı!");
+            if (entity == null)
+                throw new Exception("Device couldn't find.");
 
-            _mapper.Map(deviceUpdateDTO, existingDevice);
-            existingDevice.UpdatedAt = DateTime.UtcNow;
+            _mapper.Map(dto, entity);
 
-            _deviceDAL.Update(existingDevice);
+            entity.UpdatedAt = DateTime.UtcNow;
+
+            await _deviceDAL.UpdateAsync(entity);
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var existingDevice = _deviceDAL.Get(d => d.Id == id);
+            var entity = await _deviceDAL.GetAsync(x => x.Id == id);
 
-            if (existingDevice == null)
-                throw new Exception("Silinecek cihaz bulunamadı!");
+            if (entity == null)
+                throw new Exception("Device couldn't find.");
 
-            existingDevice.IsActive = false;
-            existingDevice.UpdatedAt = DateTime.UtcNow;
+            entity.IsActive = false;
+            entity.UpdatedAt = DateTime.UtcNow;
 
-            _deviceDAL.Update(existingDevice);
+            await _deviceDAL.UpdateAsync(entity);
         }
 
-        public List<DeviceDTO> GetAll()
+        public async Task<List<DeviceDTO>> GetAllAsync()
         {
-            var devices = _deviceDAL.GetAll(d => d.IsActive == true);
+            var devices = await _deviceDAL.GetAllAsync(x => x.IsActive);
+
             return _mapper.Map<List<DeviceDTO>>(devices);
         }
 
-        public DeviceDTO GetById(int id)
+        public async Task<DeviceDTO?> GetByIdAsync(int id)
         {
-            var device = _deviceDAL.Get(d => d.Id == id && d.IsActive == true);
+            var device = await _deviceDAL.GetAsync(x => x.Id == id && x.IsActive);
 
             if (device == null)
                 return null;

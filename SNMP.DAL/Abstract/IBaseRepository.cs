@@ -8,12 +8,18 @@ namespace SNMP.DAL.Abstract
 {
     public interface IBaseRepository<TEntity> where TEntity: BaseEntity
     {
-        public void Add(TEntity entity);
-        public void Update(TEntity entity);
-        public void Delete(TEntity entity);
-        public List<TEntity> GetAll();
-        public List<TEntity> GetAll(Expression<Func<TEntity, bool>> filter);
-        public TEntity Get(Expression<Func<TEntity, bool>> filter);
-        public TEntity GetById(int id);
+        Task AddAsync(TEntity entity);
+
+        Task UpdateAsync(TEntity entity);
+
+        Task DeleteAsync(TEntity entity);
+
+        Task<List<TEntity>> GetAllAsync();
+
+        Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter);
+
+        Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> filter);
+
+        Task<TEntity?> GetByIdAsync(int id);
     }
 }

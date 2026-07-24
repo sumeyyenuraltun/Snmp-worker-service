@@ -7,11 +7,15 @@ namespace SNMP.BLL.Abstract
 {
     public interface IBaseService<TEntity> where TEntity: BaseEntity
     {
-        public void Add(TEntity entity);
-        public void Update(TEntity entity);
-        public void Delete(TEntity entity);
-        public List<TEntity> GetAll();
-        public TEntity GetById(int id);
+        Task AddAsync(TEntity entity);
+
+        Task UpdateAsync(TEntity entity);
+
+        Task DeleteAsync(TEntity entity);
+
+        Task<List<TEntity>> GetAllAsync();
+
+        Task<TEntity?> GetByIdAsync(int id);
 
     }
 }

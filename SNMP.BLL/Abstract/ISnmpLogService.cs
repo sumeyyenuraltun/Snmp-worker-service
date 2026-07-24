@@ -8,10 +8,7 @@ namespace SNMP.BLL.Abstract
 {
     public interface ISnmpLogService
     {
-        public Task Add(AddSnmpLogDTO addSnmpLogDTO, CancellationToken cancellationToken);
-        public void Update(UpdateSnmpLogDTO updateSnmpLogDTO);
-        public void Delete(int id);
-        public List<SnmpLogDTO> GetAll();
-        public SnmpLogDTO GetById(int id);
+        Task AddAsync(AddSnmpLogDTO addSnmpLogDTO, CancellationToken cancellationToken = default);
+        Task<List<SnmpLogDTO>> GetLastLogsAsync(int count = 100);
     }
 }

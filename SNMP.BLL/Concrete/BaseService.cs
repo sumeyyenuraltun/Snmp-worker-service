@@ -19,29 +19,29 @@ namespace SNMP.BLL.Concrete
             _eventPublisher = eventPublisher;
         }
 
-        public void Add(TEntity entity)
+        public async Task AddAsync(TEntity entity)
         {
-            _repository.Add(entity);
+            await _repository.AddAsync(entity);
         }
 
-        public void Delete(TEntity entity)
+        public async Task UpdateAsync(TEntity entity)
         {
-            _repository.Delete(entity);
+            await _repository.UpdateAsync(entity);
         }
 
-        public List<TEntity> GetAll()
+        public async Task DeleteAsync(TEntity entity)
         {
-            return _repository.GetAll();
+            await _repository.DeleteAsync(entity);
         }
 
-        public TEntity GetById(int id)
+        public async Task<List<TEntity>> GetAllAsync()
         {
-            return _repository.GetById(id);
+            return await _repository.GetAllAsync();
         }
 
-        public void Update(TEntity entity)
+        public async Task<TEntity?> GetByIdAsync(int id)
         {
-            _repository.Update(entity);
+            return await _repository.GetByIdAsync(id);
         }
     }
 }

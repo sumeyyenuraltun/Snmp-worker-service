@@ -20,14 +20,14 @@ namespace SNMP.API.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var result = _deviceService.GetAll();
+            var result = _deviceService.GetAllAsync();
             return Ok(result);
         }
 
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var result = _deviceService.GetById(id);
+            var result = _deviceService.GetByIdAsync(id);
 
             if (result == null)
                 return NotFound();
@@ -36,23 +36,23 @@ namespace SNMP.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody] AddDeviceDTO addDeviceDTO, CancellationToken cancellationToken)
+        public async Task<IActionResult> Add([FromBody] AddDeviceDTO addDeviceDTO)
         {
-            await _deviceService.Add(addDeviceDTO, cancellationToken);
+            await _deviceService.AddAsync(addDeviceDTO);
             return StatusCode(201);
         }
 
         [HttpPut]
         public IActionResult Update([FromBody] UpdateDeviceDTO updateDeviceDTO)
         {
-            _deviceService.Update(updateDeviceDTO);
+            _deviceService.UpdateAsync(updateDeviceDTO);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            _deviceService.Delete(id);
+            _deviceService.DeleteAsync(id);
             return NoContent();
         }
     }

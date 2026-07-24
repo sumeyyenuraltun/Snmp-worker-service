@@ -1,14 +1,24 @@
+using AutoMapper;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Snmp.Business.Mapping;
 using Snmp.Infrastructure.Configuration;
 using Snmp.Infrastructure.Messaging;
 using SNMP.BLL.Abstract;
 using SNMP.BLL.Concrete;
+using SNMP.BLL.ValidationRules;
 using SNMP.DAL.Abstract;
 using SNMP.DAL.Concrete;
 using SNMP.DAL.Context;
 using SNMP.ENTITY.Abstract;
-using AutoMapper;
+using StackExchange.Redis;
+using Serilog;
+using Snmp.WebAPI.Middlewares;
+using Snmp.DataAccess.Abstract;
+using Snmp.DataAccess.Concrete;
+using Snmp.Business.Abstract;
+using Snmp.Business.Concrete;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,18 +26,26 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<AppDbContext>(option =>option.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddDbContext<AppDbContext>(option =>option.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSqlConnection")));
+
+var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
 
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
+builder.Services.AddScoped(typeof(IRedisBaseRepository<>), typeof(RedisBaseRepository<>));
 
 builder.Services.AddScoped<IDeviceDAL, DeviceDAL>();
 builder.Services.AddScoped<ISnmpLogDAL, SnmpLogDAL>();
+builder.Services.AddScoped<ISnmpCredentialDAL, SnmpCredentialDAL>();
 
 builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped<ISnmpLogService, SnmpLogService>();
+builder.Services.AddScoped<ISnmpCredentialService, SnmpCredentialService>();
+builder.Services.AddScoped<ISnmpRequestedService, SnmpRequestedService>();
+builder.Services.AddScoped<IPollingService, PollingService>();
 
 builder.Services.AddSingleton<IEventPublisher , RabbitMQEventPublisher>();
 
@@ -37,12 +55,21 @@ builder.Services.Configure<RabbitMQSetting>(
     builder.Configuration.GetSection(RabbitMQSetting.SecitonName) 
 );
 
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<AddDeviceDTOValidator>();
+
+Log.Logger = new LoggerConfiguration().MinimumLevel.Information().WriteTo.Console().CreateLogger();
+
+builder.Host.UseSerilog();
+
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen(); ;
+builder.Services.AddSwaggerGen(); 
 
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseSwagger();
 // Configure the HTTP request pipeline.

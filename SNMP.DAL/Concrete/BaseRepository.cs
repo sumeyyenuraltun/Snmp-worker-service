@@ -1,4 +1,5 @@
-﻿using SNMP.DAL.Abstract;
+﻿using Microsoft.EntityFrameworkCore;
+using SNMP.DAL.Abstract;
 using SNMP.DAL.Context;
 using SNMP.ENTITY.Concrete;
 using System;
@@ -17,42 +18,44 @@ namespace SNMP.DAL.Concrete
             _context = context;
         }
 
-        public void Add(TEntity entity)
+        public async Task AddAsync(TEntity entity)
         {
-            _context.Set<TEntity>().Add(entity);
-            _context.SaveChanges();
+            await _context.Set<TEntity>().AddAsync(entity);
+            await _context.SaveChangesAsync();
         }
 
-        public void Delete(TEntity entity)
+        public async Task DeleteAsync(TEntity entity)
         {
             _context.Set<TEntity>().Remove(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public TEntity Get(Expression<Func<TEntity, bool>> filter)
+        public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> filter)
         {
-            return _context.Set<TEntity>().FirstOrDefault(filter);
+            return await _context.Set<TEntity>().FirstOrDefaultAsync(filter);
         }
 
-        public List<TEntity> GetAll()
+        public async Task<List<TEntity>> GetAllAsync()
         {
-            return _context.Set<TEntity>().ToList();
+            return await _context.Set<TEntity>().ToListAsync();
         }
 
-        public List<TEntity> GetAll(Expression<Func<TEntity, bool>> filter)
+        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter)
         {
-            return _context.Set<TEntity>().Where(filter).ToList();
+            return await _context.Set<TEntity>()
+                                 .Where(filter)
+                                 .ToListAsync();
         }
 
-        public TEntity GetById(int id)
+        public async Task<TEntity?> GetByIdAsync(int id)
         {
-            return _context.Set<TEntity>().Find(id);
+            return await _context.Set<TEntity>().FindAsync(id);
         }
 
-        public void Update(TEntity entity)
+        public async Task UpdateAsync(TEntity entity)
         {
             _context.Set<TEntity>().Update(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }
