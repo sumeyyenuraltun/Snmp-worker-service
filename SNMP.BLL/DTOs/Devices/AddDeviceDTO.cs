@@ -10,5 +10,6 @@ namespace Snmp.Business.DTOs.Devices
         public string IpAddress { get; set; }
         public string DeviceName { get; set; }
         public int Port { get; set; }
+        
     }
 }

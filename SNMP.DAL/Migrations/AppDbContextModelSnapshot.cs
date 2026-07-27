@@ -110,6 +110,88 @@ namespace Snmp.DataAccess.Migrations
                     b.ToTable("SnmpCredentials");
                 });
 
+            modelBuilder.Entity("Snmp.Entity.Concrete.DeviceParameter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DeviceId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<double?>("MaxThreshold")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("MinThreshold")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("ParameterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PollingIntervalSeconds")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceId");
+
+                    b.HasIndex("ParameterId");
+
+                    b.ToTable("DeviceParameters");
+                });
+
+            modelBuilder.Entity("Snmp.Entity.Concrete.Parameter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DataType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Oid")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Parameters");
+                });
+
             modelBuilder.Entity("SNMP.ENTITY.Concrete.SnmpCredential", b =>
                 {
                     b.HasOne("SNMP.ENTITY.Concrete.Device", "Device")
@@ -121,10 +203,36 @@ namespace Snmp.DataAccess.Migrations
                     b.Navigation("Device");
                 });
 
+            modelBuilder.Entity("Snmp.Entity.Concrete.DeviceParameter", b =>
+                {
+                    b.HasOne("SNMP.ENTITY.Concrete.Device", "Device")
+                        .WithMany("DeviceParametres")
+                        .HasForeignKey("DeviceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Snmp.Entity.Concrete.Parameter", "Parameter")
+                        .WithMany("DeviceParametres")
+                        .HasForeignKey("ParameterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Device");
+
+                    b.Navigation("Parameter");
+                });
+
             modelBuilder.Entity("SNMP.ENTITY.Concrete.Device", b =>
                 {
                     b.Navigation("Credential")
                         .IsRequired();
+
+                    b.Navigation("DeviceParametres");
+                });
+
+            modelBuilder.Entity("Snmp.Entity.Concrete.Parameter", b =>
+                {
+                    b.Navigation("DeviceParametres");
                 });
 #pragma warning restore 612, 618
         }

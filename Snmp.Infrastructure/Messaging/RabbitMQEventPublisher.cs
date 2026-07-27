@@ -4,6 +4,8 @@ using RabbitMQ.Client;
 using Snmp.Entity.Abstract;
 using Snmp.Infrastructure.Configuration;
 using SNMP.ENTITY.Abstract;
+using SNMP.ENTITY.Events.Device;
+using SNMP.ENTITY.Events.Snmp;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -110,7 +112,7 @@ namespace Snmp.Infrastructure.Messaging
 
                 var body = Encoding.UTF8.GetBytes(json);
 
-                var routingKey = $"device.{@events.EventType.ToLowerInvariant()}";
+                var routingKey = GetRoutingKey(@events);
 
                 var basicProperties = new BasicProperties
                 {
@@ -176,11 +178,23 @@ namespace Snmp.Infrastructure.Messaging
 
         private class EventMessage
         {
-            public int EventId { get; set; } 
+            public Guid EventId { get; set; } 
             public string EventType { get; set; } = string.Empty;
             public DateTime OccurredAt { get; set; }
             public int AggregateId { get; set; }
             public object Data { get; set; } = null!;
+        }
+        private static string GetRoutingKey(IEvent @event)
+        {
+            return @event switch
+            {
+                DeviceCreatedEvent => "snmp.device.created",
+                DeviceDeletedEvent => "snmp.device.deleted",
+                DevicePollingStartedEvent => "snmp.device.polling.started",
+                DevicePollingStoppedEvent => "snmp.device.polling.stopped",
+                _ => throw new InvalidOperationException(
+                    $"Unknown event type: {@event.GetType().Name}")
+            };
         }
     }
 }

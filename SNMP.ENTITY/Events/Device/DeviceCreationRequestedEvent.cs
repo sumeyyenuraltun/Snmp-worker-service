@@ -5,13 +5,13 @@ using System.Text;
 
 namespace SNMP.ENTITY.Events.Device
 {
-    public class DeviceCreationRequested : BaseEvent
+    public class DeviceCreationRequestedEvent : BaseEvent
     {
         public string IpAddress { get; }
         public string DeviceName { get;  }
         public int Port { get; }
 
-        public DeviceCreationRequested(string ipAddress, string deviceName, int port)
+        public DeviceCreationRequestedEvent(string ipAddress, string deviceName, int port)
         {
             IpAddress = ipAddress;
             DeviceName = deviceName;

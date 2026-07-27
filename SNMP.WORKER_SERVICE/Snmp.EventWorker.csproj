@@ -16,4 +16,8 @@
     <ProjectReference Include="..\SNMP.ENTITY\Snmp.Entity.csproj" />
     <ProjectReference Include="..\Snmp.Infrastructure\Snmp.Infrastructure.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\" />
+  </ItemGroup>
 </Project>

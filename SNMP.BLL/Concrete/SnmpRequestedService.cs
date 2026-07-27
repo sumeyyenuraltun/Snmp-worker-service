@@ -28,7 +28,7 @@ namespace Snmp.Business.Concrete
                 throw new Exception("Device couldn't find");
             }
 
-            await _eventPublisher.PublishAsync(new SnmpQueryRequested(snmpRequestDTO.DeviceId,  snmpRequestDTO.Oid), cancellationToken);
+            await _eventPublisher.PublishAsync(new SnmpQueryRequestedEvent(snmpRequestDTO.DeviceId,  snmpRequestDTO.Oid), cancellationToken);
         }
 
         public async Task SendWalkRequestedAsync(SnmpWalkRequestDTO snmpWalkRequestDTO, CancellationToken cancellationToken)
@@ -38,7 +38,7 @@ namespace Snmp.Business.Concrete
             {
                 throw new Exception("Device couldn't find");
             }
-            await _eventPublisher.PublishAsync(new SnmpWalkRequested(snmpWalkRequestDTO.DeviceId, snmpWalkRequestDTO.RootOid),cancellationToken);
+            await _eventPublisher.PublishAsync(new SnmpWalkRequestedEvent(snmpWalkRequestDTO.DeviceId, snmpWalkRequestDTO.RootOid),cancellationToken);
         }
     }
 }

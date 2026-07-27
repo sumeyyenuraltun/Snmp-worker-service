@@ -30,7 +30,7 @@ namespace SNMP.BLL.Concrete
         {
             await _eventPublisher.PublishAsync(new SnmpLogCreationRequested(
                 addSnmpLogDTO.DeviceId,
-                addSnmpLogDTO.Oid,
+                addSnmpLogDTO.DeviceParameterId,
                 addSnmpLogDTO.Value,
                 addSnmpLogDTO.Type
             ), cancellationToken);
@@ -43,23 +43,24 @@ namespace SNMP.BLL.Concrete
 
                 await _eventPublisher.PublishAsync(new SnmpLogCreated(
                     snmpLogEntity.DeviceId,
+                    snmpLogEntity.DeviceParameterId,
                     snmpLogEntity.Value,
                     snmpLogEntity.Type,
-                    snmpLogEntity.Oid,
                     snmpLogEntity.CreatedAt
-                    ), cancellationToken);
+                ), cancellationToken);
             }
             catch (Exception ex)
-            { 
+            {
                 await _eventPublisher.PublishAsync(new SnmpLogCreationFailed(
                     addSnmpLogDTO.DeviceId,
+                    addSnmpLogDTO.DeviceParameterId,
                     addSnmpLogDTO.Value,
-                    addSnmpLogDTO.Oid,
                     addSnmpLogDTO.Type,
                     ex.Message,
                     ex.StackTrace,
                     0
-                    ), cancellationToken);
+                ), cancellationToken);
+
                 throw;
             }
         }

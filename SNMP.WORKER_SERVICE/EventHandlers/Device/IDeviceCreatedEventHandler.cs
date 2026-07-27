@@ -7,7 +7,7 @@ namespace Snmp.EventWorker.EventHandler.Device
 {
     public interface IDeviceCreatedEventHandler
     {
-        Task HandleAsync(DeviceCreated deviceCreatedEvent, CancellationToken cancellationToken = default);
+        Task HandleAsync(DeviceCreatedEvent deviceCreatedEvent, CancellationToken cancellationToken = default);
 
     }
 }

@@ -6,7 +6,7 @@ namespace Snmp.Entity.Abstract
 {
     public interface IEvent
     {
-        public int EventId { get; }
+        public Guid EventId { get;  }
         public DateTime OccuredAt { get; }
         public string EventType { get; }
         public int AggregateId { get;}

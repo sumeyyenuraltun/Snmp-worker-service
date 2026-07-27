@@ -6,7 +6,7 @@ namespace Snmp.Infrastructure.Configuration
 {
     public class RabbitMQSetting
     {
-        public const string SecitonName = "RabbitMQ";
+        public const string SectionName = "RabbitMQ";
         public string HostName { get; set; } = "localhost";
         public int Port { get; set; } = 5672;
         public required string UserName { get; set; }

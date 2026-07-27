@@ -1,12 +1,8 @@
-﻿using AutoMapper.Execution;
-using Snmp.Business.Abstract;
+﻿using Snmp.Business.Abstract;
 using Snmp.Business.DTOs.Polling;
 using SNMP.DAL.Abstract;
 using SNMP.ENTITY.Abstract;
 using SNMP.ENTITY.Events.Snmp;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Snmp.Business.Concrete
 {
@@ -23,7 +19,7 @@ namespace Snmp.Business.Concrete
 
         public async Task StartAsync(StartPollingDTO startPollingDTO, CancellationToken cancellationToken)
         {
-            var device = await _deviceDAL.GetAsync(x =>x.Id == startPollingDTO.DeviceId && x.IsActive);
+            var device = await _deviceDAL.GetAsync(x => x.Id == startPollingDTO.DeviceId && x.IsActive);
 
             if (device == null)
                 throw new Exception("Device not found.");
@@ -37,10 +33,7 @@ namespace Snmp.Business.Concrete
 
             await _deviceDAL.UpdateAsync(device);
 
-            await _eventPublisher.PublishAsync(
-                new DevicePollingStarted(startPollingDTO.DeviceId, startPollingDTO.IntervalSeconds),
-                cancellationToken);
-
+            await _eventPublisher.PublishAsync(new DevicePollingStartedEvent( device.Id,device.IpAddress,device.Port,startPollingDTO.IntervalSeconds),cancellationToken);
         }
 
         public async Task StopAsync(StopPollingDTO stopPollingDTO, CancellationToken cancellationToken)
@@ -59,7 +52,7 @@ namespace Snmp.Business.Concrete
             await _deviceDAL.UpdateAsync(device);
 
             await _eventPublisher.PublishAsync(
-                new DevicePollingStopped(stopPollingDTO.DeviceId),
+                new DevicePollingStoppedEvent(stopPollingDTO.DeviceId),
                 cancellationToken);
         }
     }

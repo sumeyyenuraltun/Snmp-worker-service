@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Snmp.Entity.Concrete;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,6 +13,7 @@ namespace SNMP.ENTITY.Concrete
         public bool PollingEnabled { get; set; }
         public int PollingIntervalSeconds { get; set; }
         public SnmpCredential Credential { get; set; }
+        public ICollection<DeviceParameter> DeviceParametres { get; set; } = new List<DeviceParameter>();
         public ICollection<SnmpLog> SnmpLogs { get; set; } = new List<SnmpLog>();
     }
 }

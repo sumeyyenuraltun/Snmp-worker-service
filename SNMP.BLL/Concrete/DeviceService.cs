@@ -17,17 +17,54 @@ namespace SNMP.BLL.Concrete
     {
         private readonly IDeviceDAL _deviceDAL;
         private readonly IMapper _mapper;
-        public DeviceService(IDeviceDAL deviceDAL , IMapper mapper)
+        private readonly IEventPublisher _eventPublisher;
+        public DeviceService(IDeviceDAL deviceDAL , IMapper mapper, IEventPublisher eventPublisher)
         {
             _deviceDAL = deviceDAL;
             _mapper = mapper;
+            _eventPublisher = eventPublisher;
         }
 
-        public async Task AddAsync(AddDeviceDTO dto)
+        public async Task AddAsync( AddDeviceDTO dto, CancellationToken cancellationToken)
         {
-            var entity = _mapper.Map<Device>(dto);
+            try
+            {
+                var entity = _mapper.Map<Device>(dto);
 
-            await _deviceDAL.AddAsync(entity);
+                await _deviceDAL.AddAsync(entity, cancellationToken);
+
+
+                var deviceCreatedEvent = new DeviceCreatedEvent(
+                    entity.IpAddress,
+                    entity.DeviceName,
+                    entity.Port,
+                    entity.CreatedAt
+                    
+                );
+                deviceCreatedEvent.AggregateId = entity.Id;
+
+
+                await _eventPublisher.PublishAsync(
+                    deviceCreatedEvent,
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                var failedEvent = new DeviceCreationFailedEvent(
+                    dto.IpAddress,
+                    dto.DeviceName,
+                    dto.Port,
+                    ex.Message,
+                    ex.InnerException?.Message
+                );
+
+
+                await _eventPublisher.PublishAsync(
+                    failedEvent,
+                    cancellationToken);
+
+                throw;
+            }
         }
 
         public async Task UpdateAsync(UpdateDeviceDTO dto)

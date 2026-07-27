@@ -5,16 +5,13 @@ using System.Text;
 
 namespace SNMP.ENTITY.Events.Snmp
 {
-    public class SnmpQueryRequested : BaseEvent
+    public class DevicePollingStoppedEvent : BaseEvent
     {
-        public SnmpQueryRequested(int deviceId, string oid)
+        public DevicePollingStoppedEvent(int deviceId)
         {
             DeviceId = deviceId;
-            Oid = oid;
         }
 
         public int DeviceId { get;  }
-
-        public string Oid { get; }
     }
 }

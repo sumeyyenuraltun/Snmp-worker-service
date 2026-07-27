@@ -5,16 +5,16 @@ using System.Text;
 
 namespace SNMP.ENTITY.Events.Snmp
 {
-    public class DevicePollingStarted: BaseEvent
+    public class SnmpWalkRequestedEvent : BaseEvent
     {
-        public DevicePollingStarted(int deviceId, int ıntervalSeconds)
+        public SnmpWalkRequestedEvent(int deviceId, string rootOid)
         {
             DeviceId = deviceId;
-            IntervalSeconds = ıntervalSeconds;
+            RootOid = rootOid;
         }
 
         public int DeviceId { get; }
 
-        public int IntervalSeconds { get; }
+        public string RootOid { get; }
     }
 }

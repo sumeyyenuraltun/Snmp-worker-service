@@ -18,10 +18,13 @@ namespace SNMP.DAL.Concrete
             _context = context;
         }
 
-        public async Task AddAsync(TEntity entity)
+        public async Task AddAsync( TEntity entity,CancellationToken cancellationToken)
         {
-            await _context.Set<TEntity>().AddAsync(entity);
-            await _context.SaveChangesAsync();
+            await _context.Set<TEntity>()
+                .AddAsync(entity, cancellationToken);
+
+            await _context.SaveChangesAsync(
+                cancellationToken);
         }
 
         public async Task DeleteAsync(TEntity entity)
@@ -30,9 +33,16 @@ namespace SNMP.DAL.Concrete
             await _context.SaveChangesAsync();
         }
 
-        public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> filter)
+        public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> filter,params Expression<Func<TEntity, object>>[] includes)
         {
-            return await _context.Set<TEntity>().FirstOrDefaultAsync(filter);
+            IQueryable<TEntity> query = _context.Set<TEntity>();
+
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            return await query.FirstOrDefaultAsync(filter);
         }
 
         public async Task<List<TEntity>> GetAllAsync()
@@ -40,11 +50,21 @@ namespace SNMP.DAL.Concrete
             return await _context.Set<TEntity>().ToListAsync();
         }
 
-        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter)
+        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? filter = null,params Expression<Func<TEntity, object>>[] includes)
         {
-            return await _context.Set<TEntity>()
-                                 .Where(filter)
-                                 .ToListAsync();
+            IQueryable<TEntity> query = _context.Set<TEntity>();
+
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task<TEntity?> GetByIdAsync(int id)

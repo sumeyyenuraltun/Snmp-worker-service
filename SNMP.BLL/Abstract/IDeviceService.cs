@@ -8,7 +8,7 @@ namespace SNMP.BLL.Abstract
 {
     public interface IDeviceService 
     {
-        Task AddAsync(AddDeviceDTO addDeviceDTO);
+        Task AddAsync(AddDeviceDTO addDeviceDTO, CancellationToken cancellationToken);
 
         Task UpdateAsync(UpdateDeviceDTO updateDeviceDTO);
 

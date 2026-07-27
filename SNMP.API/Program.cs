@@ -34,25 +34,28 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Conn
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-builder.Services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
 builder.Services.AddScoped(typeof(IRedisBaseRepository<>), typeof(RedisBaseRepository<>));
 
 builder.Services.AddScoped<IDeviceDAL, DeviceDAL>();
 builder.Services.AddScoped<ISnmpLogDAL, SnmpLogDAL>();
 builder.Services.AddScoped<ISnmpCredentialDAL, SnmpCredentialDAL>();
+builder.Services.AddScoped<IParameterDAL, ParameterDAL>();
+builder.Services.AddScoped<IDeviceParameterDAL, DeviceParameterDAL>();
 
 builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped<ISnmpLogService, SnmpLogService>();
 builder.Services.AddScoped<ISnmpCredentialService, SnmpCredentialService>();
 builder.Services.AddScoped<ISnmpRequestedService, SnmpRequestedService>();
 builder.Services.AddScoped<IPollingService, PollingService>();
+builder.Services.AddScoped<IParameterService, ParameterService>();
+builder.Services.AddScoped<IDeviceParameterService, DeviceParameterService>();
 
 builder.Services.AddSingleton<IEventPublisher , RabbitMQEventPublisher>();
 
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MapProfile>());
 
 builder.Services.Configure<RabbitMQSetting>(
-    builder.Configuration.GetSection(RabbitMQSetting.SecitonName) 
+    builder.Configuration.GetSection(RabbitMQSetting.SectionName) 
 );
 
 builder.Services.AddFluentValidationAutoValidation();

@@ -21,7 +21,7 @@ namespace Snmp.Business.Concrete
             _mapper = mapper;
         }
 
-        public async Task AddAsync(AddSnmpCredentialDTO dto)
+        public async Task AddAsync(AddSnmpCredentialDTO dto, CancellationToken cancellationToken)
         {
             var exists = await _snmpCredentialDAL.GetAsync(x =>
                 x.DeviceId == dto.DeviceId &&
@@ -32,7 +32,7 @@ namespace Snmp.Business.Concrete
 
             var entity = _mapper.Map<SnmpCredential>(dto);
 
-            await _snmpCredentialDAL.AddAsync(entity);
+            await _snmpCredentialDAL.AddAsync(entity,cancellationToken);
         }
 
         public async Task UpdateAsync(UpdateSnmpCredentialDTO dto)
@@ -74,6 +74,20 @@ namespace Snmp.Business.Concrete
                 return null;
 
             return _mapper.Map<SnmpCredentialDTO>(entity);
+        }
+        public async Task<List<SnmpCredentialDTO>> GetAllAsync()
+        {
+            var credentials = await _snmpCredentialDAL.GetAllAsync();
+            return _mapper.Map<List<SnmpCredentialDTO>>(credentials);
+        }
+        public async Task<SnmpCredentialDTO?> GetByIdAsync(int id)
+        {
+            var credential = await _snmpCredentialDAL.GetByIdAsync(id);
+
+            if (credential == null)
+                return null;
+
+            return _mapper.Map<SnmpCredentialDTO>(credential);
         }
     }
 }

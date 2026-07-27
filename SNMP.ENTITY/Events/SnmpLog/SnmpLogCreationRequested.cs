@@ -8,13 +8,14 @@ namespace SNMP.ENTITY.Events.SnmpLog
     public class SnmpLogCreationRequested : BaseEvent
     {
         public int DeviceId { get; }
-        public string Oid { get; }
+        public int DeviceParameterId { get; }
         public string Value { get; }
         public string Type { get; }
-        public SnmpLogCreationRequested(int deviceId, string oid, string value, string type)
+
+        public SnmpLogCreationRequested(int deviceId,int deviceParameterId,string value,string type)
         {
             DeviceId = deviceId;
-            Oid = oid;
+            DeviceParameterId = deviceParameterId;
             Value = value;
             Type = type;
         }

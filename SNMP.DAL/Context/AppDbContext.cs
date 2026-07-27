@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Snmp.Entity.Concrete;
 using SNMP.ENTITY.Concrete;
 using System;
 using System.Collections.Generic;
@@ -20,5 +21,7 @@ namespace SNMP.DAL.Context
 
         public DbSet<Device> Devices { get; set; }
         public DbSet<SnmpCredential> SnmpCredentials { get; set; }
+        public DbSet<Parameter> Parameters { get; set; }
+        public DbSet<DeviceParameter> DeviceParameters { get; set; }
     }
 }

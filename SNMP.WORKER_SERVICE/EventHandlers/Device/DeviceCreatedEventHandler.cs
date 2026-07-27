@@ -7,7 +7,7 @@ namespace Snmp.EventWorker.EventHandler.Device
 {
     public class DeviceCreatedEventHandler(ILogger<DeviceCreatedEventHandler> logger) : IDeviceCreatedEventHandler
     {
-        public async Task HandleAsync(DeviceCreated deviceCreatedEvent, CancellationToken cancellationToken = default)
+        public async Task HandleAsync(DeviceCreatedEvent deviceCreatedEvent, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(deviceCreatedEvent);
 

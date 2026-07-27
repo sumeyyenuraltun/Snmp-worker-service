@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SNMP.ENTITY.Events.Device
 {
-    public class DeviceCreationFailed : BaseEvent
+    public class DeviceCreationFailedEvent : BaseEvent
     {
 
         public string IpAddress { get; }
@@ -13,16 +13,15 @@ namespace SNMP.ENTITY.Events.Device
         public int Port { get; }
         public string ErrorMessage { get; }
         public string? ErrorDetails { get; }
-        public int RequestedBy { get;  }
-
-        public DeviceCreationFailed(string ıpAddress, string deviceName, int port, string errorMessage, string? errorDetails, int requestedBy)
+    
+        public DeviceCreationFailedEvent(string ıpAddress, string deviceName, int port, string errorMessage, string? errorDetails)
         {
             IpAddress = ıpAddress;
             DeviceName = deviceName;
             Port = port;
             ErrorMessage = errorMessage;
             ErrorDetails = errorDetails;
-            RequestedBy = requestedBy;
+            
         }
     }
 }

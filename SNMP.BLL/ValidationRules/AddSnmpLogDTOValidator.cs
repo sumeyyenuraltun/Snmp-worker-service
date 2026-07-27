@@ -13,7 +13,7 @@ namespace Snmp.Business.ValidationRules
             RuleFor(x => x.DeviceId)
                 .GreaterThan(0).WithMessage("Geçerli bir cihaz ID'si girilmelidir.");
 
-            RuleFor(x => x.Oid)
+            RuleFor(x => x.DeviceParameterId)
                 .NotEmpty().WithMessage("OID adresi boş olamaz.");
 
             RuleFor(x => x.Value)

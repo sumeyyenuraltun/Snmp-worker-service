@@ -7,7 +7,7 @@ namespace Snmp.Entity.Concrete
 {
     public abstract class BaseEvent : IEvent
     {
-        public int EventId { get; set; }
+        public Guid EventId { get; init; } = Guid.NewGuid();
 
         public DateTime OccuredAt { get; set; } 
 

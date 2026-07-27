@@ -1,6 +1,10 @@
 ﻿using AutoMapper;
+using Snmp.Business.DTOs.DeviceParameter;
 using Snmp.Business.DTOs.Devices;
+using Snmp.Business.DTOs.Parameter;
+using Snmp.Business.DTOs.SnmpCredentials;
 using Snmp.Business.DTOs.SnmpLogs;
+using Snmp.Entity.Concrete;
 using SNMP.ENTITY.Concrete;
 using System;
 using System.Collections.Generic;
@@ -19,6 +23,23 @@ namespace Snmp.Business.Mapping
             CreateMap<SnmpLog, SnmpLogDTO>().ReverseMap();
             CreateMap<SnmpLog, AddSnmpLogDTO>().ReverseMap();
             CreateMap<SnmpLog, UpdateSnmpLogDTO>().ReverseMap();
+
+            CreateMap<Parameter, ParameterDTO>().ReverseMap();
+            CreateMap<Parameter, AddParameterDTO>().ReverseMap();
+            CreateMap<Parameter, UpdateParameterDTO>().ReverseMap();
+
+            CreateMap<DeviceParameter, DeviceParameterDTO>()
+                .ForMember(dest => dest.ParameterName,
+                    opt => opt.MapFrom(src => src.Parameter != null ? src.Parameter.Name : string.Empty))
+                .ForMember(dest => dest.Oid,
+                    opt => opt.MapFrom(src => src.Parameter != null ? src.Parameter.Oid : string.Empty));
+
+            CreateMap<DeviceParameter, AddDeviceParameterDTO>().ReverseMap();
+            CreateMap<DeviceParameter, UpdateDeviceParameterDTO>().ReverseMap();
+
+            CreateMap<SnmpCredential, SnmpCredentialDTO>().ReverseMap();
+            CreateMap<SnmpCredential, AddSnmpCredentialDTO>().ReverseMap();
+            CreateMap<SnmpCredential, UpdateSnmpCredentialDTO>().ReverseMap();
 
         }
     }

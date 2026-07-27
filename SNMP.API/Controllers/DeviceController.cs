@@ -18,16 +18,16 @@ namespace SNMP.API.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var result = _deviceService.GetAllAsync();
+            var result = await _deviceService.GetAllAsync();
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var result = _deviceService.GetByIdAsync(id);
+            var result = await _deviceService.GetByIdAsync(id);
 
             if (result == null)
                 return NotFound();
@@ -36,23 +36,23 @@ namespace SNMP.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody] AddDeviceDTO addDeviceDTO)
+        public async Task<IActionResult> Add([FromBody] AddDeviceDTO addDeviceDTO, CancellationToken cancellationToken)
         {
-            await _deviceService.AddAsync(addDeviceDTO);
+            await _deviceService.AddAsync(addDeviceDTO, cancellationToken);
             return StatusCode(201);
         }
 
         [HttpPut]
-        public IActionResult Update([FromBody] UpdateDeviceDTO updateDeviceDTO)
+        public async Task<IActionResult> Update([FromBody] UpdateDeviceDTO updateDeviceDTO)
         {
-            _deviceService.UpdateAsync(updateDeviceDTO);
+            await _deviceService.UpdateAsync(updateDeviceDTO);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            _deviceService.DeleteAsync(id);
+            await _deviceService.DeleteAsync(id);
             return NoContent();
         }
     }
