@@ -18,5 +18,7 @@ namespace Snmp.Business.DTOs.SnmpCredentials
         public AuthProtocol AuthProtocol { get; set; }
 
         public PrivacyProtocol PrivacyProtocol { get; set; }
+        public string AuthPassword { get; set; }
+        public string PrivacyPassword { get; set; }
     }
 }

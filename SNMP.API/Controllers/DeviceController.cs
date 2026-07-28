@@ -43,16 +43,16 @@ namespace SNMP.API.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] UpdateDeviceDTO updateDeviceDTO)
+        public async Task<IActionResult> Update([FromBody] UpdateDeviceDTO updateDeviceDTO, CancellationToken cancellationToken)
         {
-            await _deviceService.UpdateAsync(updateDeviceDTO);
+            await _deviceService.UpdateAsync(updateDeviceDTO, cancellationToken);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            await _deviceService.DeleteAsync(id);
+            await _deviceService.DeleteAsync(id, cancellationToken);
             return NoContent();
         }
     }

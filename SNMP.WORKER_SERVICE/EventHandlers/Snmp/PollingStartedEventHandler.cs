@@ -1,4 +1,5 @@
-﻿using SNMP.ENTITY.Events.Snmp;
+﻿using Snmp.EventWorker.Polling;
+using SNMP.ENTITY.Events.Snmp;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,19 +9,23 @@ namespace Snmp.EventWorker.EventHandlers.Polling
     public class PollingStartedEventHandler : IPollingStartedEventHandler
     {
         private readonly ILogger<PollingStartedEventHandler> _logger;
+        private readonly IPollingManager _pollingManager;
 
-        public PollingStartedEventHandler(ILogger<PollingStartedEventHandler> logger)
+        public PollingStartedEventHandler(ILogger<PollingStartedEventHandler> logger, IPollingManager pollingManager)
         {
             _logger = logger;
+            _pollingManager = pollingManager;
         }
 
-        public async Task HandleAsync(DevicePollingStartedEvent devicePollingStartedEvent, CancellationToken cancellation = default)
+        public async Task HandleAsync(DevicePollingStartedEvent devicePollingStartedEvent, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(devicePollingStartedEvent);
 
             _logger.LogInformation("PollingStarted event received. DeviceId : {DeviceId} IpAddress: {IpAddress} Port : {Port}", devicePollingStartedEvent.AggregateId, devicePollingStartedEvent.IpAddress, devicePollingStartedEvent.Port);
 
-            await Task.CompletedTask;
+            await _pollingManager.StartAsync(devicePollingStartedEvent,cancellationToken);
+
+            _logger.LogInformation("Polling manager started for DeviceId: {DeviceId}",devicePollingStartedEvent.DeviceId);
         }
     }
 }

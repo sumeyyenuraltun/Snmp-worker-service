@@ -7,9 +7,10 @@ namespace SNMP.ENTITY.Enums
     public enum AuthProtocol
     {
         None = 0,
-        DES = 1,
-        AES128 = 2,
-        AES192 = 3,
-        AES256 = 4
+        MD5 = 1,
+        SHA1 = 2,
+        SHA256 = 3,
+        SHA384 = 4,
+        SHA512 = 5
     }
 }

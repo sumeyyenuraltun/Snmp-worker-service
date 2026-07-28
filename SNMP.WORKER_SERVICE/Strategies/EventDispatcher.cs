@@ -30,9 +30,14 @@ namespace Snmp.EventWorker.Strategies
 
         public async Task DispatchAsync(EventMessage eventMessage, CancellationToken cancellationToken)
         {
+            _logger.LogInformation(  "Dispatching EventType: {EventType}",eventMessage.EventType);
+
+            _logger.LogInformation("Available strategies: {Strategies}", string.Join(", ", _strategies.Keys));
+
             if (_strategies.TryGetValue(eventMessage.EventType, out var strategy))
             {
                 await strategy.HandleEventAsync(eventMessage, cancellationToken);
+                return;
             }
 
             _logger.LogWarning(

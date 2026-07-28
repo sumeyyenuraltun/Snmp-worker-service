@@ -42,16 +42,16 @@ namespace Snmp.WebAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] UpdateDeviceParameterDTO updateDeviceParameterDTO)
+        public async Task<IActionResult> Update([FromBody] UpdateDeviceParameterDTO updateDeviceParameterDTO, CancellationToken cancellationToken)
         {
-            await _deviceParameterService.UpdateAsync(updateDeviceParameterDTO);
+            await _deviceParameterService.UpdateAsync(updateDeviceParameterDTO, cancellationToken);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            await _deviceParameterService.DeleteAsync(id);
+            await _deviceParameterService.DeleteAsync(id, cancellationToken);
             return NoContent();
         }
     }

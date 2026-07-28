@@ -67,21 +67,34 @@ namespace SNMP.BLL.Concrete
             }
         }
 
-        public async Task UpdateAsync(UpdateDeviceDTO dto)
+        public async Task UpdateAsync(UpdateDeviceDTO dto, CancellationToken cancellationToken)
         {
             var entity = await _deviceDAL.GetAsync(x => x.Id == dto.Id);
 
             if (entity == null)
                 throw new Exception("Device couldn't find.");
 
+            var oldIpAddress = entity.IpAddress;
+            var oldPort = entity.Port;
+
             _mapper.Map(dto, entity);
 
             entity.UpdatedAt = DateTime.UtcNow;
 
             await _deviceDAL.UpdateAsync(entity);
+
+            if(oldIpAddress != entity.IpAddress || oldPort != entity.Port)
+            {
+                await _eventPublisher.PublishAsync(new DeviceUpdatedEvent(
+                    entity.Id,
+                    entity.IpAddress,
+                    entity.Port
+                    ), cancellationToken);
+            }
+
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id, CancellationToken cancellationToken)
         {
             var entity = await _deviceDAL.GetAsync(x => x.Id == id);
 
@@ -91,7 +104,13 @@ namespace SNMP.BLL.Concrete
             entity.IsActive = false;
             entity.UpdatedAt = DateTime.UtcNow;
 
-            await _deviceDAL.UpdateAsync(entity);
+            await _deviceDAL.DeleteAsync(entity);
+
+            await _eventPublisher.PublishAsync(new DeviceDeletedEvent(
+                entity.Id,
+                entity.IpAddress,
+                entity.DeviceName
+                ),cancellationToken);
         }
 
         public async Task<List<DeviceDTO>> GetAllAsync()

@@ -10,9 +10,9 @@ namespace SNMP.BLL.Abstract
     {
         Task AddAsync(AddDeviceDTO addDeviceDTO, CancellationToken cancellationToken);
 
-        Task UpdateAsync(UpdateDeviceDTO updateDeviceDTO);
+        Task UpdateAsync(UpdateDeviceDTO updateDeviceDTO, CancellationToken cancellationToken);
 
-        Task DeleteAsync(int id);
+        Task DeleteAsync(int id, CancellationToken cancellationToken);
 
         Task<List<DeviceDTO>> GetAllAsync();
 

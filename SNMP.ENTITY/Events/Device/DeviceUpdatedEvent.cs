@@ -1,25 +1,21 @@
 ﻿using Snmp.Entity.Concrete;
-using SNMP.ENTITY.Concrete;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace SNMP.ENTITY.Events.Device
 {
-    public class DeviceDeletedEvent : BaseEvent
+    public class DeviceUpdatedEvent : BaseEvent
     {
-        public DeviceDeletedEvent(int deviceId, string ipAddress, string deviceName)
+        public DeviceUpdatedEvent(int deviceId, string ipAddress, int port)
         {
             DeviceId = deviceId;
             IpAddress = ipAddress;
-            DeviceName = deviceName;
-
-            AggregateId = deviceId;
+            Port = port;
         }
 
         public int DeviceId { get; }
         public string IpAddress { get; }
-        public string DeviceName { get; }
-        
+        public int Port { get; }
     }
 }

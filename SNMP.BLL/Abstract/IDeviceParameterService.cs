@@ -12,8 +12,8 @@ namespace Snmp.Business.Abstract
 
         Task<DeviceParameterDTO> AddAsync(AddDeviceParameterDTO addDeviceParameterDTO, CancellationToken cancellationToken);
 
-        Task DeleteAsync(int id);
-        Task<DeviceParameterDTO> UpdateAsync(UpdateDeviceParameterDTO updateDeviceParameterDTO);
+        Task DeleteAsync(int id, CancellationToken cancellationToken);
+        Task<DeviceParameterDTO> UpdateAsync(UpdateDeviceParameterDTO updateDeviceParameterDTO, CancellationToken cancellationToken);
         Task<DeviceParameterDTO?> GetByIdAsync(int id);
     }
 }

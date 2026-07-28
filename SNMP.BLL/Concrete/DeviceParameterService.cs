@@ -39,7 +39,7 @@ namespace Snmp.Business.Concrete
             return _mapper.Map<DeviceParameterDTO>(entity);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id, CancellationToken cancellationToken)
         {
             var entity = await _deviceParameterDAL.GetByIdAsync(id);
 
@@ -48,7 +48,7 @@ namespace Snmp.Business.Concrete
 
             await _deviceParameterDAL.DeleteAsync(entity);
         }
-        public async Task<DeviceParameterDTO> UpdateAsync(UpdateDeviceParameterDTO updateDeviceParameterDTO)
+        public async Task<DeviceParameterDTO> UpdateAsync(UpdateDeviceParameterDTO updateDeviceParameterDTO, CancellationToken cancellationToken)
         {
             var entity = await _deviceParameterDAL.GetByIdAsync(updateDeviceParameterDTO.Id);
 

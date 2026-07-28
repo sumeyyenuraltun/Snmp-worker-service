@@ -17,8 +17,8 @@ namespace Snmp.EventWorker.BackgroundServices
         private IConnection? _connection;
         private IChannel? _channel;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
-        private readonly IEventDispatcher _dispatcher;
-        public RabbitMQListener(ILogger<RabbitMQListener> logger, IOptions<RabbitMQSetting> settings, IEventDispatcher dispatcher)
+        private readonly IServiceScopeFactory _scopeFactory;
+        public RabbitMQListener(ILogger<RabbitMQListener> logger, IOptions<RabbitMQSetting> settings, IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
             _settings = settings.Value;
@@ -27,7 +27,7 @@ namespace Snmp.EventWorker.BackgroundServices
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 PropertyNameCaseInsensitive = true
             };
-            _dispatcher = dispatcher;
+            _scopeFactory = scopeFactory;
         }
 
         private async Task InitializeRabbitMqAsync(CancellationToken cancellationToken)
@@ -70,7 +70,7 @@ namespace Snmp.EventWorker.BackgroundServices
                 await _channel.QueueBindAsync(
                     queue: _settings.QueueName,
                     exchange: _settings.ExchangeName,
-                    routingKey: "snmp.device.*",
+                    routingKey: "snmp.device.#",
                     cancellationToken: cancellationToken
                     );
 
@@ -93,7 +93,14 @@ namespace Snmp.EventWorker.BackgroundServices
                     _logger.LogInformation("Failed to deserialize event message. RoutingKey: {RoutingKey}", routingKey);
                     return;
                 }
-                await _dispatcher.DispatchAsync(eventMessage, cancellationToken);
+                using var scope = _scopeFactory.CreateScope();
+
+                var dispatcher = scope.ServiceProvider
+                    .GetRequiredService<IEventDispatcher>();
+
+                await dispatcher.DispatchAsync(
+                    eventMessage,
+                    cancellationToken);
             }
             catch (Exception ex)
             {
@@ -125,7 +132,7 @@ namespace Snmp.EventWorker.BackgroundServices
                     var routingKey = ea.RoutingKey;
                     _logger.LogDebug("Received message with RoutingKey : {RoutingKey}, Body: {Body}", routingKey, message);
                     await ProcessEventAsync(message, routingKey, stoppingToken);
-                    // _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
+                    _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
                 }
                 catch (Exception ex)
                 {
