@@ -1,0 +1,86 @@
+﻿using System.Net;
+using System.Net.Sockets;
+using Lextm.SharpSnmpLib;
+using Lextm.SharpSnmpLib.Messaging;
+using Lextm.SharpSnmpLib.Security;
+
+// ================== AYARLAR ==================
+const int Port = 1161; // 161 doluysa 1161 yapın, worker tarafında da aynı portu kullanın
+
+var oidValues = new Dictionary<string, ISnmpData>
+{
+    ["1.3.6.1.4.1.3442.101.1.1045.2.10.1.0"] = new OctetString("1"),
+    ["1.3.6.1.4.1.3442.101.1.1045.2.10.2.0"] = new OctetString("(1)(2)"),
+    ["1.3.6.1.4.1.3442.101.1.1045.2.10.3.0"] = new OctetString("PROFEN"),
+    ["1.3.6.1.4.1.3442.101.1.1045.2.10.4.0"] = new OctetString("(3)(4)"),
+};
+// =============================================
+
+using var udp = new UdpClient(Port);
+Console.WriteLine($"SNMP simulatoru UDP {Port} portunda dinliyor. Cikmak icin Ctrl+C.");
+
+while (true)
+{
+    var remote = new IPEndPoint(IPAddress.Any, 0);
+    byte[] buffer;
+
+    try
+    {
+        buffer = udp.Receive(ref remote);
+    }
+    catch (SocketException ex)
+    {
+        Console.WriteLine($"Soket hatasi: {ex.Message}");
+        continue;
+    }
+
+    try
+    {
+        var messages = MessageFactory.ParseMessages(
+            buffer, 0, buffer.Length, new UserRegistry());
+
+        foreach (var message in messages)
+        {
+            var pdu = message.Pdu();
+
+            if (pdu.TypeCode != SnmpType.GetRequestPdu)
+            {
+                Console.WriteLine($"{remote} -> desteklenmeyen PDU tipi: {pdu.TypeCode}");
+                continue;
+            }
+
+            var responseVariables = new List<Variable>();
+
+            foreach (var variable in pdu.Variables)
+            {
+                var oid = variable.Id.ToString();
+
+                if (oidValues.TryGetValue(oid, out var data))
+                {
+                    responseVariables.Add(new Variable(variable.Id, data));
+                    Console.WriteLine($"{remote} -> GET {oid} => {data}");
+                }
+                else
+                {
+                    responseVariables.Add(new Variable(variable.Id, new NoSuchObject()));
+                    Console.WriteLine($"{remote} -> GET {oid} => (boyle bir OID yok)");
+                }
+            }
+
+            var response = new ResponseMessage(
+                message.RequestId(),
+                message.Version,
+                message.Parameters.UserName, // gelen community'yi aynen geri yansitir
+                ErrorCode.NoError,
+                0,
+                responseVariables);
+
+            var bytes = response.ToBytes();
+            udp.Send(bytes, bytes.Length, remote);
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Paket islenemedi ({remote}): {ex.Message}");
+    }
+}

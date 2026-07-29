@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
-namespace SNMP.BLL.ValidationRules
+namespace Snmp.Business.ValidationRules.DeviceValidator
 {
     public class AddDeviceDTOValidator : AbstractValidator<AddDeviceDTO>
     {

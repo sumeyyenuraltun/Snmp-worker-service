@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Snmp.Business.ValidationRules
+namespace Snmp.Business.ValidationRules.DeviceValidator
 {
     public class AddSnmpLogDTOValidator : AbstractValidator<AddSnmpLogDTO>
     {

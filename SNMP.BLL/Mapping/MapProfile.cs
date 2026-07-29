@@ -29,10 +29,10 @@ namespace Snmp.Business.Mapping
             CreateMap<Parameter, UpdateParameterDTO>().ReverseMap();
 
             CreateMap<DeviceParameter, DeviceParameterDTO>()
-                .ForMember(dest => dest.ParameterName,
-                    opt => opt.MapFrom(src => src.Parameter != null ? src.Parameter.Name : string.Empty))
-                .ForMember(dest => dest.Oid,
-                    opt => opt.MapFrom(src => src.Parameter != null ? src.Parameter.Oid : string.Empty));
+               .ForMember(dest => dest.ParameterName,
+                  opt => opt.MapFrom(src => src.Parameter != null ? src.Parameter.Name : string.Empty))
+               .ForMember(dest => dest.Oid,
+                  opt => opt.MapFrom(src => src.Parameter != null ? src.Parameter.Oid : string.Empty));
 
             CreateMap<DeviceParameter, AddDeviceParameterDTO>().ReverseMap();
             CreateMap<DeviceParameter, UpdateDeviceParameterDTO>().ReverseMap();

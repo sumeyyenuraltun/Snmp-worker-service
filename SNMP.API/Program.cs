@@ -7,7 +7,6 @@ using Snmp.Infrastructure.Configuration;
 using Snmp.Infrastructure.Messaging;
 using SNMP.BLL.Abstract;
 using SNMP.BLL.Concrete;
-using SNMP.BLL.ValidationRules;
 using SNMP.DAL.Abstract;
 using SNMP.DAL.Concrete;
 using SNMP.DAL.Context;
@@ -19,6 +18,7 @@ using Snmp.DataAccess.Abstract;
 using Snmp.DataAccess.Concrete;
 using Snmp.Business.Abstract;
 using Snmp.Business.Concrete;
+using Snmp.Business.ValidationRules.DeviceValidator;
 
 var builder = WebApplication.CreateBuilder(args);
 

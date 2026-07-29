@@ -1,5 +1,7 @@
-﻿using Snmp.Business.DTOs.SnmpCredentials;
+﻿using Snmp.Business.Abstract;
+using Snmp.Business.DTOs.SnmpCredentials;
 using Snmp.DataAccess.Abstract;
+using Snmp.Entity.Concrete;
 using Snmp.EventWorker.Services;
 using SNMP.ENTITY.Events.Snmp;
 using System;
@@ -50,9 +52,12 @@ namespace Snmp.EventWorker.Polling
                     while (!cts.Token.IsCancellationRequested)
                     {
                         using var scope = _serviceScopeFactory.CreateScope();
-                        var credentialDal = scope.ServiceProvider.GetRequiredService<ISnmpCredentialDAL>();
 
-                        var credentialEntity = await credentialDal.GetByDeviceIdAsync(eventMessage.DeviceId);
+                        var credentialService = scope.ServiceProvider.GetRequiredService<ISnmpCredentialService>();
+                        var deviceParameterService = scope.ServiceProvider.GetRequiredService<IDeviceParameterService>();
+
+                        var credentialEntity = await credentialService.GetByDeviceIdAsync(eventMessage.DeviceId);
+                        var deviceParameters = await deviceParameterService.GetByDeviceIdAsync(eventMessage.DeviceId);
 
                         if (credentialEntity == null)
                         {
@@ -69,17 +74,29 @@ namespace Snmp.EventWorker.Polling
                                 AuthProtocol = credentialEntity.AuthProtocol,
                                 PrivacyProtocol = credentialEntity.PrivacyProtocol,
                                 AuthPassword = credentialEntity.AuthPassword,
-                                PrivacyPassword = credentialEntity.PrivacyPassword
+                                PrivacyPassword = credentialEntity.PrivacyPassword,
+                                Version = credentialEntity.Version,
+                                Community = credentialEntity.Community
                             };
 
-                            var result = await _snmpService.GetAsync(
-                                eventMessage.IpAddress,
-                                eventMessage.Port,
-                                "1.3.6.1.2.1.1.3.0",
-                                credentialDto,
-                                cts.Token);
+                            foreach (var parameter in deviceParameters)
+                            {
+                                var result = await _snmpService.GetAsync(
+                                    eventMessage.IpAddress,
+                                    eventMessage.Port,
+                                    parameter.Oid,
+                                    credentialDto,
+                                    cts.Token);
 
-                            _logger.LogInformation("SNMP Result for Device {DeviceId}: {Result}", eventMessage.DeviceId, result);
+                                _logger.LogInformation(
+                                    "Parameter: {Parameter}, Value: {Value}",
+                                    parameter.ParameterName,
+                                    result);
+
+                                _logger.LogInformation("SNMP Result for Device {DeviceId}: {Result}", eventMessage.DeviceId, result);
+                            }
+
+                            
                         }
 
                         await Task.Delay(

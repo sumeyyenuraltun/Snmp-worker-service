@@ -190,6 +190,7 @@ namespace Snmp.Infrastructure.Messaging
             {
                 DeviceCreatedEvent => "snmp.device.created",
                 DeviceDeletedEvent => "snmp.device.deleted",
+                DeviceUpdatedEvent => "snmp.device.updated",
                 DevicePollingStartedEvent => "snmp.device.polling.started",
                 DevicePollingStoppedEvent => "snmp.device.polling.stopped",
                 _ => throw new InvalidOperationException(

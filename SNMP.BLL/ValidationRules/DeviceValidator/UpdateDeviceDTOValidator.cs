@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
-namespace Snmp.Business.ValidationRules
+namespace Snmp.Business.ValidationRules.DeviceValidator
 {
     public class UpdateDeviceDTOValidator : AbstractValidator<UpdateDeviceDTO>
     {
