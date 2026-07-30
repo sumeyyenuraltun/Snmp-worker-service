@@ -7,17 +7,25 @@ using Snmp.Business.Mapping;
 using Snmp.DataAccess.Abstract;
 using Snmp.DataAccess.Concrete;
 using Snmp.EventWorker.BackgroundServices;
-using Snmp.EventWorker.EventHandler.Device;
-using Snmp.EventWorker.EventHandlers.Device;
-using Snmp.EventWorker.EventHandlers.Polling;
-using Snmp.EventWorker.EventHandlers.Snmp;
-using Snmp.EventWorker.Helpers;
-using Snmp.EventWorker.Helpers;
+using Snmp.EventWorker.EventHandlers.Abstract.Device;
+using Snmp.EventWorker.EventHandlers.Abstract.Snmp;
+using Snmp.EventWorker.EventHandlers.Concrete.Device;
+using Snmp.EventWorker.EventHandlers.Concrete.Snmp;
 using Snmp.EventWorker.Polling;
-using Snmp.EventWorker.Services;
+using Snmp.EventWorker.Redis.Repositories;
+using Snmp.EventWorker.Redis.Services;
+using Snmp.EventWorker.Snmp.Helpers;
+using Snmp.EventWorker.Snmp.Operations.Get;
+using Snmp.EventWorker.Snmp.Operations.GetNext;
+using Snmp.EventWorker.Snmp.Operations.Set;
+using Snmp.EventWorker.Snmp.Operations.Walk;
+using Snmp.EventWorker.Snmp.Providers;
+using Snmp.EventWorker.Snmp.Services;
 using Snmp.EventWorker.Strategies;
+using Snmp.EventWorker.Strategies.Device;
 using Snmp.Infrastructure.Configuration;
 using SNMP.DAL.Context;
+using StackExchange.Redis;
 using System.Text.Json;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -25,9 +33,12 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+var redisConnection = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConn") ?? "localhost:6379");
+builder.Services.AddSingleton<IConnectionMultiplexer>(redisConnection);
+
 builder.Services.Configure<RabbitMQSetting>(builder.Configuration.GetSection(RabbitMQSetting.SectionName));
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MapProfile>());
-//builder.Services.AddHostedService<RabbitMQEventConsumerService>();
+
 builder.Services.AddHostedService<RabbitMQListener>();
 
 builder.Services.AddScoped<IDeviceCreatedEventHandler, DeviceCreatedEventHandler>();
@@ -49,11 +60,25 @@ builder.Services.AddScoped<ISnmpCredentialDAL, SnmpCredentialDAL>();
 builder.Services.AddScoped<IDeviceParameterDAL, DeviceParameterDAL>();
 
 builder.Services.AddSingleton<ISnmpProviderFactory, SnmpProviderFactory>();
-builder.Services.AddSingleton<ISnmpService, SnmpService>();
+builder.Services.AddScoped<ISnmpService, SnmpService>();
 builder.Services.AddSingleton(new JsonSerializerOptions
 {
     PropertyNameCaseInsensitive = true,
     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 });
+
+builder.Services.AddScoped<IRedisRepository, RedisRepository>();
+builder.Services.AddScoped<IRedisService, RedisService>();
+
+
+builder.Services.AddSingleton<ISnmpRequestFactory, SnmpRequestFactory>();
+
+builder.Services.AddScoped<ISnmpProvider, SnmpV2Provider>();
+builder.Services.AddScoped<ISnmpProvider, SnmpV3Provider>();
+
+builder.Services.AddScoped<ISnmpGetOperation, SnmpGetOperation>();
+builder.Services.AddScoped<ISnmpGetNextOperation, SnmpGetNextOperation>();
+builder.Services.AddScoped<ISnmpWalkOperation, SnmpWalkOperation>();
+builder.Services.AddScoped<ISnmpSetOperation, SnmpSetOperation>();
 var host = builder.Build();
 host.Run();

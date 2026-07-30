@@ -16,7 +16,7 @@ namespace SNMP.DAL.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Ignore<SnmpLog>();
+            
         }
 
         public DbSet<Device> Devices { get; set; }

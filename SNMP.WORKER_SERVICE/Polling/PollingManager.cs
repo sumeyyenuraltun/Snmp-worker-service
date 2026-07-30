@@ -1,8 +1,12 @@
-﻿using Snmp.Business.Abstract;
+﻿using AutoMapper.Execution;
+using Snmp.Business.Abstract;
 using Snmp.Business.DTOs.SnmpCredentials;
+using Snmp.Business.DTOs.SnmpValue;
 using Snmp.DataAccess.Abstract;
 using Snmp.Entity.Concrete;
-using Snmp.EventWorker.Services;
+using Snmp.EventWorker.Redis.Repositories;
+using Snmp.EventWorker.Redis.Services;
+using Snmp.EventWorker.Snmp.Services;
 using SNMP.ENTITY.Events.Snmp;
 using System;
 using System.Collections.Concurrent;
@@ -15,13 +19,13 @@ namespace Snmp.EventWorker.Polling
     {
         private readonly ILogger<PollingManager> _logger;
         private readonly ConcurrentDictionary<int, CancellationTokenSource> _runningPollings = new();
-        private readonly ISnmpService _snmpService;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        public PollingManager(ILogger<PollingManager> logger, ISnmpService snmpService, IServiceScopeFactory serviceScopeFactory)
+    
+        public PollingManager(ILogger<PollingManager> logger, IServiceScopeFactory serviceScopeFactory)
         {
             _logger = logger;
-            _snmpService = snmpService;
             _serviceScopeFactory = serviceScopeFactory;
+            
         }
 
         public bool IsRunning(int deviceId)
@@ -55,6 +59,8 @@ namespace Snmp.EventWorker.Polling
 
                         var credentialService = scope.ServiceProvider.GetRequiredService<ISnmpCredentialService>();
                         var deviceParameterService = scope.ServiceProvider.GetRequiredService<IDeviceParameterService>();
+                        var redisService = scope.ServiceProvider.GetRequiredService<IRedisService>();
+                        var snmpService = scope.ServiceProvider.GetRequiredService<ISnmpService>();
 
                         var credentialEntity = await credentialService.GetByDeviceIdAsync(eventMessage.DeviceId);
                         var deviceParameters = await deviceParameterService.GetByDeviceIdAsync(eventMessage.DeviceId);
@@ -81,22 +87,38 @@ namespace Snmp.EventWorker.Polling
 
                             foreach (var parameter in deviceParameters)
                             {
-                                var result = await _snmpService.GetAsync(
+                                try
+                                {
+                                    var result = await snmpService.GetAsync(
                                     eventMessage.IpAddress,
                                     eventMessage.Port,
                                     parameter.Oid,
                                     credentialDto,
                                     cts.Token);
 
-                                _logger.LogInformation(
-                                    "Parameter: {Parameter}, Value: {Value}",
-                                    parameter.ParameterName,
-                                    result);
+                                    if (result != null)
+                                    {
+                                        await redisService.SaveLatestValueAsync(new SnmpValue
+                                        {
+                                            DeviceId = eventMessage.DeviceId,
+                                            ParameterId = parameter.ParameterId,
+                                            Oid = parameter.Oid,
+                                            Value = result,
+                                            Timestamp = DateTime.UtcNow
+                                        });
+                                    }
+                                    _logger.LogInformation(
+                                    "Parameter: {Parameter}, Value: {Value}",parameter.ParameterName,result);
 
-                                _logger.LogInformation("SNMP Result for Device {DeviceId}: {Result}", eventMessage.DeviceId, result);
+                                    _logger.LogInformation("SNMP Result for Device {DeviceId}: {Result}", eventMessage.DeviceId, result);
+                                }
+                                catch (Exception ex) 
+                                {
+                                    _logger.LogError(ex, "SNMP query failed. DeviceId:{DeviceId}, OID:{Oid}", eventMessage.DeviceId, parameter.Oid);
+                                }
+                                
                             }
 
-                            
                         }
 
                         await Task.Delay(

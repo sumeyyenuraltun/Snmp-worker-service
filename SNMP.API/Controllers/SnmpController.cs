@@ -17,18 +17,40 @@ namespace Snmp.WebAPI.Controllers
         }
 
         [HttpPost("get")]
-        public async Task<IActionResult> Get(SnmpRequestDTO snmpRequestDTO, CancellationToken cancellationToken)
+        public async Task<IActionResult> Get([FromBody] SnmpRequestDTO request,CancellationToken cancellationToken)
         {
-            await _snmpRequestedService.SendGetRequestedAsync(snmpRequestDTO,cancellationToken);
+            await _snmpRequestedService.SendGetRequestedAsync(request, cancellationToken);
+
             return Ok("SNMP GET request has been queued.");
         }
 
         [HttpPost("walk")]
-        public async Task<IActionResult> Walk(SnmpWalkRequestDTO snmpWalkRequestDTO, CancellationToken cancellationToken)
+        public async Task<IActionResult> Walk([FromBody] SnmpWalkRequestDTO request,CancellationToken cancellationToken)
         {
-            await _snmpRequestedService.SendWalkRequestedAsync(snmpWalkRequestDTO,cancellationToken);
+            await _snmpRequestedService.SendWalkRequestedAsync(request, cancellationToken);
+
             return Ok("SNMP WALK request has been queued.");
         }
+
+        [HttpPost("getnext")]
+        public async Task<IActionResult> GetNext( [FromBody] SnmpGetNextRequestDTO request,CancellationToken cancellationToken)
+        {
+            await _snmpRequestedService.SendGetNextRequestedAsync(request, cancellationToken);
+
+            return Ok("SNMP GETNEXT request has been queued.");
+        }
+
+        [HttpPost("set")]
+        public async Task<IActionResult> Set([FromBody] SnmpSetRequestDTO request, CancellationToken cancellationToken)
+        {
+            await _snmpRequestedService.SendSetRequestedAsync(request, cancellationToken);
+
+            return Ok("SNMP SET request has been queued.");
+        }
+
+
+
+
 
 
     }

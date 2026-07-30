@@ -30,6 +30,6 @@ namespace Snmp.WebAPI.Controllers
             await _pollingService.StopAsync(stopPollingDTO, cancellationToken);
             return Ok("Polling stoped");
         }
-
+       
     }
 }

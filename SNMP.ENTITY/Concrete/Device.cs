@@ -14,6 +14,6 @@ namespace SNMP.ENTITY.Concrete
         public int PollingIntervalSeconds { get; set; }
         public SnmpCredential Credential { get; set; }
         public ICollection<DeviceParameter> DeviceParametres { get; set; } = new List<DeviceParameter>();
-        public ICollection<SnmpLog> SnmpLogs { get; set; } = new List<SnmpLog>();
+        
     }
 }

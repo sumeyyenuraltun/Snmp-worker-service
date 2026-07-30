@@ -9,5 +9,7 @@ namespace Snmp.Business.Abstract
     {
         Task SendGetRequestedAsync(SnmpRequestDTO snmpRequestDTO, CancellationToken cancellationToken);
         Task SendWalkRequestedAsync(SnmpWalkRequestDTO snmpWalkRequestDTO, CancellationToken cancellationToken);
+        Task SendGetNextRequestedAsync(SnmpGetNextRequestDTO snmpGetNextRequestDTO, CancellationToken cancellationToken);
+        Task SendSetRequestedAsync(SnmpSetRequestDTO snmpSetRequestDTO, CancellationToken cancellationToken);
     }
 }

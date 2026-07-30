@@ -4,17 +4,22 @@ using Lextm.SharpSnmpLib;
 using Lextm.SharpSnmpLib.Messaging;
 using Lextm.SharpSnmpLib.Security;
 
-// ================== AYARLAR ==================
-const int Port = 1161; // 161 doluysa 1161 yapın, worker tarafında da aynı portu kullanın
+const int Port = 1161;
+var rnd = new Random();
 
-var oidValues = new Dictionary<string, ISnmpData>
+string Random(params int[] kodlar)
 {
-    ["1.3.6.1.4.1.3442.101.1.1045.2.10.1.0"] = new OctetString("1"),
-    ["1.3.6.1.4.1.3442.101.1.1045.2.10.2.0"] = new OctetString("(1)(2)"),
-    ["1.3.6.1.4.1.3442.101.1.1045.2.10.3.0"] = new OctetString("PROFEN"),
-    ["1.3.6.1.4.1.3442.101.1.1045.2.10.4.0"] = new OctetString("(3)(4)"),
+    var secilen = kodlar[rnd.Next(kodlar.Length)];
+    return $"{secilen}";
+}
+
+var oidValues = new Dictionary<string, Func<ISnmpData>>
+{
+    ["1.3.6.1.4.1.3442.101.1.1045.2.10.1.0"] = () => new OctetString("1"),
+    ["1.3.6.1.4.1.3442.101.1.1045.2.10.2.0"] = () => new OctetString(Random(1, 2)),
+    ["1.3.6.1.4.1.3442.101.1.1045.2.10.3.0"] = () => new OctetString("PROFEN"),
+    ["1.3.6.1.4.1.3442.101.1.1045.2.10.4.0"] = () => new OctetString(Random(3, 4)),
 };
-// =============================================
 
 using var udp = new UdpClient(Port);
 Console.WriteLine($"SNMP simulatoru UDP {Port} portunda dinliyor. Cikmak icin Ctrl+C.");
@@ -55,8 +60,9 @@ while (true)
             {
                 var oid = variable.Id.ToString();
 
-                if (oidValues.TryGetValue(oid, out var data))
+                if (oidValues.TryGetValue(oid, out var uret))
                 {
+                    var data = uret();
                     responseVariables.Add(new Variable(variable.Id, data));
                     Console.WriteLine($"{remote} -> GET {oid} => {data}");
                 }
@@ -70,7 +76,7 @@ while (true)
             var response = new ResponseMessage(
                 message.RequestId(),
                 message.Version,
-                message.Parameters.UserName, // gelen community'yi aynen geri yansitir
+                message.Parameters.UserName, 
                 ErrorCode.NoError,
                 0,
                 responseVariables);

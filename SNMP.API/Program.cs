@@ -28,22 +28,17 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(option =>option.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSqlConnection")));
 
-var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
-builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
 
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-builder.Services.AddScoped(typeof(IRedisBaseRepository<>), typeof(RedisBaseRepository<>));
 
 builder.Services.AddScoped<IDeviceDAL, DeviceDAL>();
-builder.Services.AddScoped<ISnmpLogDAL, SnmpLogDAL>();
 builder.Services.AddScoped<ISnmpCredentialDAL, SnmpCredentialDAL>();
 builder.Services.AddScoped<IParameterDAL, ParameterDAL>();
 builder.Services.AddScoped<IDeviceParameterDAL, DeviceParameterDAL>();
 
 builder.Services.AddScoped<IDeviceService, DeviceService>();
-builder.Services.AddScoped<ISnmpLogService, SnmpLogService>();
 builder.Services.AddScoped<ISnmpCredentialService, SnmpCredentialService>();
 builder.Services.AddScoped<ISnmpRequestedService, SnmpRequestedService>();
 builder.Services.AddScoped<IPollingService, PollingService>();
