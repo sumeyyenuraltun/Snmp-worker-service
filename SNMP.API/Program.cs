@@ -53,6 +53,8 @@ builder.Services.Configure<RabbitMQSetting>(
     builder.Configuration.GetSection(RabbitMQSetting.SectionName) 
 );
 
+
+
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<AddDeviceDTOValidator>();
 

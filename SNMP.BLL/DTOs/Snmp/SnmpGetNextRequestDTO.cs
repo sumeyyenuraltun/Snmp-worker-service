@@ -9,5 +9,6 @@ namespace Snmp.Business.DTOs.Snmp
         public int DeviceId { get; set; }
 
         public string Oid { get; set; } = string.Empty;
+        public int TimeoutMilliseconds { get; set; } = 5000;
     }
 }

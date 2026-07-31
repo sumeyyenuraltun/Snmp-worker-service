@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Snmp.Business.DTOs.Devices;
+using Snmp.DataAccess.Abstract;
 using SNMP.BLL.Abstract;
 using SNMP.DAL.Abstract;
 using SNMP.DAL.Concrete;
@@ -18,11 +19,13 @@ namespace SNMP.BLL.Concrete
         private readonly IDeviceDAL _deviceDAL;
         private readonly IMapper _mapper;
         private readonly IEventPublisher _eventPublisher;
-        public DeviceService(IDeviceDAL deviceDAL , IMapper mapper, IEventPublisher eventPublisher)
+
+        public DeviceService(IDeviceDAL deviceDAL, IMapper mapper, IEventPublisher eventPublisher)
         {
             _deviceDAL = deviceDAL;
             _mapper = mapper;
             _eventPublisher = eventPublisher;
+        
         }
 
         public async Task AddAsync( AddDeviceDTO dto, CancellationToken cancellationToken)

@@ -1,5 +1,6 @@
 ﻿using Snmp.Business.Abstract;
 using Snmp.Business.DTOs.Polling;
+using Snmp.DataAccess.Abstract;
 using SNMP.DAL.Abstract;
 using SNMP.ENTITY.Abstract;
 using SNMP.ENTITY.Events.Snmp;

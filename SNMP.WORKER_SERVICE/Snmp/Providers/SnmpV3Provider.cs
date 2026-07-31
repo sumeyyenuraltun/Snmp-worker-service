@@ -31,11 +31,11 @@ namespace Snmp.EventWorker.Snmp.Providers
             };
 
             var discovery = Messenger.GetNextDiscovery(SnmpType.GetRequestPdu);
-            var report = discovery.GetResponse(5000, endpoint);
+            var report = discovery.GetResponse(request.TimeoutMilliseconds, endpoint);
 
             var getRequest = _requestFactory.CreateV3GetRequest(request.Credential, variables,report);
       
-            var response = await Task.Run(() => getRequest.GetResponse(5000, endpoint), cancellationToken);
+            var response = await Task.Run(() => getRequest.GetResponse(request.TimeoutMilliseconds, endpoint), cancellationToken);
 
             var pdu = response.Pdu();
 
@@ -46,10 +46,75 @@ namespace Snmp.EventWorker.Snmp.Providers
 
             return null;
         }
-
-        public Task<IList<Variable>> WalkAsync(SnmpRequest request, CancellationToken cancellationToken = default)
+        public async Task<string?> GetNextAsync(SnmpRequest request,CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var endpoint = new IPEndPoint(
+                IPAddress.Parse(request.IpAddress),
+                request.Port);
+
+            var variables = new List<Variable>
+            {
+               new Variable(new ObjectIdentifier(request.Oid))
+            };
+
+            var discovery = Messenger.GetNextDiscovery(SnmpType.GetNextRequestPdu);
+
+            var report = discovery.GetResponse(request.TimeoutMilliseconds, endpoint);
+
+            var getNextRequest = _requestFactory.CreateV3GetNextRequest(
+                request.Credential,
+                variables,
+                report);
+
+            var response = await Task.Run(
+                () => getNextRequest.GetResponse(request.TimeoutMilliseconds, endpoint),
+                cancellationToken);
+
+            return response.Pdu().Variables.Count > 0
+                ? response.Pdu().Variables[0].Data.ToString()
+                : null;
+        }
+        public async Task<IList<Variable>> WalkAsync(SnmpRequest request,CancellationToken cancellationToken = default)
+        {
+            var endpoint = new IPEndPoint(IPAddress.Parse(request.IpAddress),request.Port);
+
+            var result = new List<Variable>();
+
+            var discovery = Messenger.GetNextDiscovery(SnmpType.GetNextRequestPdu);
+            var report = discovery.GetResponse(request.TimeoutMilliseconds, endpoint);
+
+            var currentOid = new ObjectIdentifier(request.Oid);
+
+            while (true)
+            {
+                var variables = new List<Variable>
+            {
+                new Variable(currentOid)
+            };
+
+                var getNextRequest = _requestFactory.CreateV3GetNextRequest(
+                    request.Credential,
+                    variables,
+                    report);
+
+                var response = await Task.Run(
+                    () => getNextRequest.GetResponse(request.TimeoutMilliseconds, endpoint),
+                    cancellationToken);
+
+                var variable = response.Pdu().Variables.First();
+
+                if (variable.Data is EndOfMibView)
+                    break;
+
+                if (!variable.Id.ToString().StartsWith(request.Oid))
+                    break;
+
+                result.Add(variable);
+
+                currentOid = variable.Id;
+            }
+
+            return result;
         }
     }
 }

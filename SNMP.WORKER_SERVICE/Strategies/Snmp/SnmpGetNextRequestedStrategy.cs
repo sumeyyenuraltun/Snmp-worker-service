@@ -1,4 +1,5 @@
-﻿using SNMP.ENTITY.Events.Snmp;
+﻿using Snmp.EventWorker.EventHandlers.Abstract.Snmp;
+using SNMP.ENTITY.Events.Snmp;
 using System;
 using System.Collections.Generic;
 using System.Text;

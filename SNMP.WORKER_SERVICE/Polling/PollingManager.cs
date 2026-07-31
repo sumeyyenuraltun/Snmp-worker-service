@@ -6,6 +6,7 @@ using Snmp.DataAccess.Abstract;
 using Snmp.Entity.Concrete;
 using Snmp.EventWorker.Redis.Repositories;
 using Snmp.EventWorker.Redis.Services;
+using Snmp.EventWorker.Snmp.Models;
 using Snmp.EventWorker.Snmp.Services;
 using SNMP.ENTITY.Events.Snmp;
 using System;
@@ -89,12 +90,14 @@ namespace Snmp.EventWorker.Polling
                             {
                                 try
                                 {
-                                    var result = await snmpService.GetAsync(
-                                    eventMessage.IpAddress,
-                                    eventMessage.Port,
-                                    parameter.Oid,
-                                    credentialDto,
-                                    cts.Token);
+                                    var request = new SnmpRequest
+                                    {
+                                        IpAddress = eventMessage.IpAddress,
+                                        Port = eventMessage.Port,
+                                        Oid = parameter.Oid,
+                                        Credential = credentialDto
+                                    };
+                                    var result = await snmpService.GetAsync(request, cts.Token);
 
                                     if (result != null)
                                     {

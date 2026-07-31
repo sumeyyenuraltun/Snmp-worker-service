@@ -8,6 +8,6 @@ namespace Snmp.EventWorker.Snmp.Operations.GetNext
 {
     public interface ISnmpGetNextOperation
     {
-        Task<Variable?> ExecuteAsync(SnmpRequest snmpRequest, CancellationToken cancellationToken = default);
+        Task<string?> ExecuteAsync(SnmpRequest snmpRequest, CancellationToken cancellationToken = default);
     }
 }

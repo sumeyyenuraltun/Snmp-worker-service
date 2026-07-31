@@ -70,7 +70,7 @@ namespace Snmp.EventWorker.BackgroundServices
                 await _channel.QueueBindAsync(
                     queue: _settings.QueueName,
                     exchange: _settings.ExchangeName,
-                    routingKey: "snmp.device.#",
+                    routingKey: "snmp.#",
                     cancellationToken: cancellationToken
                     );
 

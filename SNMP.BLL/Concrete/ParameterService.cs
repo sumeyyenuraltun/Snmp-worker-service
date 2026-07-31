@@ -14,9 +14,7 @@ namespace Snmp.Business.Concrete
         private readonly IParameterDAL _parameterDAL;
         private readonly IMapper _mapper;
 
-        public ParameterService(
-            IParameterDAL parameterDAL,
-            IMapper mapper)
+        public ParameterService(IParameterDAL parameterDAL, IMapper mapper)
         {
             _parameterDAL = parameterDAL;
             _mapper = mapper;

@@ -13,7 +13,7 @@ namespace Snmp.Entity.Concrete
 
         public int ParameterId { get; set; }
         public Parameter Parameter { get; set; }
-
+        public int TimeoutMilliseconds { get; set; } = 5000;
         public bool IsEnabled { get; set; }
 
         public int PollingIntervalSeconds { get; set; }

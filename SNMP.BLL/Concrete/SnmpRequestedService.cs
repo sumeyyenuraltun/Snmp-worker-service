@@ -1,5 +1,6 @@
 ﻿using Snmp.Business.Abstract;
 using Snmp.Business.DTOs.Snmp;
+using Snmp.DataAccess.Abstract;
 using SNMP.DAL.Abstract;
 using SNMP.ENTITY.Abstract;
 using SNMP.ENTITY.Events.Snmp;
@@ -20,7 +21,6 @@ namespace Snmp.Business.Concrete
             _eventPublisher = eventPublisher;
         }
 
-
         public async Task SendGetRequestedAsync(SnmpRequestDTO snmpRequestDTO, CancellationToken cancellationToken)
         {
             var device = await _deviceDAL.GetByIdAsync(snmpRequestDTO.DeviceId);
@@ -29,7 +29,7 @@ namespace Snmp.Business.Concrete
                 throw new Exception("Device couldn't find");
             }
 
-            await _eventPublisher.PublishAsync(new SnmpGetRequestedEvent(snmpRequestDTO.DeviceId,  snmpRequestDTO.Oid), cancellationToken);
+            await _eventPublisher.PublishAsync(new SnmpGetRequestedEvent(snmpRequestDTO.DeviceId,  snmpRequestDTO.Oid, snmpRequestDTO.TimeoutMilliseconds), cancellationToken);
         }
 
         public async Task SendWalkRequestedAsync(SnmpWalkRequestDTO snmpWalkRequestDTO, CancellationToken cancellationToken)
@@ -39,7 +39,7 @@ namespace Snmp.Business.Concrete
               {
                   throw new Exception("Device couldn't find");
               }
-              await _eventPublisher.PublishAsync(new SnmpWalkRequestedEvent(snmpWalkRequestDTO.DeviceId, snmpWalkRequestDTO.RootOid),cancellationToken);
+              await _eventPublisher.PublishAsync(new SnmpWalkRequestedEvent(snmpWalkRequestDTO.DeviceId, snmpWalkRequestDTO.RootOid, snmpWalkRequestDTO.TimeoutMilliseconds),cancellationToken);
         }
 
         public async Task SendSetRequestedAsync(SnmpSetRequestDTO snmpSetRequestDTO, CancellationToken cancellationToken)
@@ -51,7 +51,7 @@ namespace Snmp.Business.Concrete
                 throw new Exception("Device couldn't find");
             }
 
-            await _eventPublisher.PublishAsync(new SnmpSetRequestedEvent(snmpSetRequestDTO.DeviceId, snmpSetRequestDTO.Oid, snmpSetRequestDTO.Value), cancellationToken);
+            await _eventPublisher.PublishAsync(new SnmpSetRequestedEvent(snmpSetRequestDTO.DeviceId, snmpSetRequestDTO.Oid, snmpSetRequestDTO.Value, snmpSetRequestDTO.TimeoutMilliseconds), cancellationToken);
         }
 
         public async Task SendGetNextRequestedAsync(SnmpGetNextRequestDTO snmpGetNextRequestDTO, CancellationToken cancellationToken)
@@ -63,7 +63,7 @@ namespace Snmp.Business.Concrete
                 throw new Exception("Device couldn't find");
             }
 
-            await _eventPublisher.PublishAsync(new SnmpGetNextRequestedEvent(snmpGetNextRequestDTO.DeviceId, snmpGetNextRequestDTO.Oid), cancellationToken);
+            await _eventPublisher.PublishAsync(new SnmpGetNextRequestedEvent(snmpGetNextRequestDTO.DeviceId, snmpGetNextRequestDTO.Oid, snmpGetNextRequestDTO.TimeoutMilliseconds), cancellationToken);
         }
 
     }

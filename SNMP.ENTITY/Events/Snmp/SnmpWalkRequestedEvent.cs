@@ -7,14 +7,16 @@ namespace SNMP.ENTITY.Events.Snmp
 {
     public class SnmpWalkRequestedEvent : BaseEvent
     {
-        public SnmpWalkRequestedEvent(int deviceId, string rootOid)
+        public SnmpWalkRequestedEvent(int deviceId, string rootOid, int timeoutMilliseconds)
         {
             DeviceId = deviceId;
             RootOid = rootOid;
+            TimeoutMilliseconds = timeoutMilliseconds;
         }
 
         public int DeviceId { get; }
 
         public string RootOid { get; }
+        public int TimeoutMilliseconds { get; set; }
     }
 }

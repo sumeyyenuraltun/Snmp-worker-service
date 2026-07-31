@@ -11,5 +11,6 @@ namespace Snmp.Business.DTOs.Snmp
         public string Oid { get; set; } = string.Empty;
 
         public string Value { get; set; } = string.Empty;
+        public int TimeoutMilliseconds { get; set; } = 5000;
     }
 }

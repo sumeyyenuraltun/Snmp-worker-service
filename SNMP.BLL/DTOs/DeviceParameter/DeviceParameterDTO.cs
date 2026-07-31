@@ -11,7 +11,7 @@ namespace Snmp.Business.DTOs.DeviceParameter
         public int DeviceId { get; set; }
 
         public int ParameterId { get; set; }
-
+        public int TimeoutMilliseconds { get; set; } = 5000;
         public string ParameterName { get; set; } = string.Empty;
 
         public string Oid { get; set; } = string.Empty;

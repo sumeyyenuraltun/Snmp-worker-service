@@ -193,6 +193,10 @@ namespace Snmp.Infrastructure.Messaging
                 DeviceUpdatedEvent => "snmp.device.updated",
                 DevicePollingStartedEvent => "snmp.device.polling.started",
                 DevicePollingStoppedEvent => "snmp.device.polling.stopped",
+                SnmpGetRequestedEvent => "snmp.snmp.get.requested",
+                SnmpWalkRequestedEvent => "snmp.snmp.walk.requested",
+                SnmpGetNextRequestedEvent => "snmp.snmp.getnext.requested",
+                SnmpSetRequestedEvent => "snmp.snmp.set.requested",
                 _ => throw new InvalidOperationException(
                     $"Unknown event type: {@event.GetType().Name}")
             };

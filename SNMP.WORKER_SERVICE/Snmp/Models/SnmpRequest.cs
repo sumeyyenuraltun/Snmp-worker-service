@@ -11,6 +11,8 @@ namespace Snmp.EventWorker.Snmp.Models
         public int Port { get; set; }
         public string Oid { get; set; }
         public SnmpCredentialDTO Credential { get; set; } = null!;
+        public string? Value { get; set; }
+        public int TimeoutMilliseconds { get; set; } = 5000;
 
     }
 }

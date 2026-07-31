@@ -15,12 +15,12 @@ namespace Snmp.Business.Concrete
         private readonly IDeviceParameterDAL _deviceParameterDAL;
         private readonly IMapper _mapper;
 
-        public DeviceParameterService(
-            IDeviceParameterDAL deviceParameterDAL,
-            IMapper mapper)
+
+        public DeviceParameterService(IDeviceParameterDAL deviceParameterDAL, IMapper mapper)
         {
             _deviceParameterDAL = deviceParameterDAL;
             _mapper = mapper;
+          
         }
 
         public async Task<List<DeviceParameterDTO>> GetByDeviceIdAsync(int deviceId)
@@ -35,6 +35,7 @@ namespace Snmp.Business.Concrete
             var entity = _mapper.Map<DeviceParameter>(addDeviceParameterDTO);
 
             await _deviceParameterDAL.AddAsync(entity,cancellationToken);
+          
 
             return _mapper.Map<DeviceParameterDTO>(entity);
         }
@@ -47,6 +48,7 @@ namespace Snmp.Business.Concrete
                 throw new Exception("Device parameter not found.");
 
             await _deviceParameterDAL.DeleteAsync(entity);
+      
         }
         public async Task<DeviceParameterDTO> UpdateAsync(UpdateDeviceParameterDTO updateDeviceParameterDTO, CancellationToken cancellationToken)
         {
@@ -59,6 +61,7 @@ namespace Snmp.Business.Concrete
             entity.ParameterId = updateDeviceParameterDTO.ParameterId;
 
             await _deviceParameterDAL.UpdateAsync(entity);
+         
 
             return _mapper.Map<DeviceParameterDTO>(entity);
         }

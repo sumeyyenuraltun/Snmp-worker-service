@@ -10,6 +10,7 @@ namespace Snmp.EventWorker.Snmp.Helpers
     public interface ISnmpRequestFactory
     {
         GetRequestMessage CreateV3GetRequest(SnmpCredentialDTO snmpCredentialDTO, IList<Variable> variables, ISnmpMessage report);
+        GetNextRequestMessage CreateV3GetNextRequest(SnmpCredentialDTO credential,IList<Variable> variables,ISnmpMessage report);
 
     }
 }

@@ -31,5 +31,28 @@ namespace Snmp.EventWorker.Snmp.Helpers
             Messenger.MaxMessageSize,
             report);
         }
+
+        public GetNextRequestMessage CreateV3GetNextRequest(SnmpCredentialDTO credential,IList<Variable> variables, ISnmpMessage report)
+        {
+            var auth = _providerFactory.CreateAuthentication(
+                credential.AuthProtocol!.Value,
+                credential.AuthPassword!);
+
+            var privacy = _providerFactory.CreatePrivacy(
+                credential.PrivacyProtocol!.Value,
+                credential.PrivacyPassword!,
+                auth);
+
+            return new GetNextRequestMessage(
+                VersionCode.V3,
+                Messenger.NextMessageId,
+                Messenger.NextRequestId,
+                new OctetString(credential.UserName!),
+                OctetString.Empty,
+                variables,
+                privacy,
+                Messenger.MaxMessageSize,
+                report);
+        }
     }
 }

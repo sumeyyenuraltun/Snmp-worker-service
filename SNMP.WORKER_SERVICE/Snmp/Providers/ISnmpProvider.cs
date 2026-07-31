@@ -13,6 +13,7 @@ namespace Snmp.EventWorker.Snmp.Providers
 
         Task<string?> GetAsync(SnmpRequest request, CancellationToken cancellationToken = default);
         Task<IList<Variable>> WalkAsync(SnmpRequest request,CancellationToken cancellationToken = default);
+        Task<string?> GetNextAsync( SnmpRequest request,CancellationToken cancellationToken = default);
 
     }
 }

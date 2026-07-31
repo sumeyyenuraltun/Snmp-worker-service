@@ -15,6 +15,7 @@ using Snmp.EventWorker.Polling;
 using Snmp.EventWorker.Redis.Repositories;
 using Snmp.EventWorker.Redis.Services;
 using Snmp.EventWorker.Snmp.Helpers;
+using Snmp.EventWorker.Snmp.Manager;
 using Snmp.EventWorker.Snmp.Operations.Get;
 using Snmp.EventWorker.Snmp.Operations.GetNext;
 using Snmp.EventWorker.Snmp.Operations.Set;
@@ -23,7 +24,12 @@ using Snmp.EventWorker.Snmp.Providers;
 using Snmp.EventWorker.Snmp.Services;
 using Snmp.EventWorker.Strategies;
 using Snmp.EventWorker.Strategies.Device;
+using Snmp.EventWorker.Strategies.Snmp;
 using Snmp.Infrastructure.Configuration;
+using SNMP.BLL.Abstract;
+using SNMP.BLL.Concrete;
+using SNMP.DAL.Abstract;
+using SNMP.DAL.Concrete;
 using SNMP.DAL.Context;
 using StackExchange.Redis;
 using System.Text.Json;
@@ -51,6 +57,10 @@ builder.Services.AddScoped<IEventStrategy, DeviceCreatedStrategy>();
 builder.Services.AddScoped<IEventStrategy, DeviceDeletedStrategy>();
 builder.Services.AddScoped<IEventStrategy, DevicePollingStartedStrategy>();
 builder.Services.AddScoped<IEventStrategy, DevicePollingStoppedStrategy>();
+builder.Services.AddScoped<IEventStrategy, SnmpGetRequestedStrategy>();
+builder.Services.AddScoped<IEventStrategy, SnmpWalkRequestedStrategy>();
+builder.Services.AddScoped<IEventStrategy, SnmpGetNextRequestedStrategy>();
+builder.Services.AddScoped<IEventStrategy, SnmpSetRequestedStrategy>();
 
 builder.Services.AddSingleton<IPollingManager, PollingManager>();
 
@@ -80,5 +90,14 @@ builder.Services.AddScoped<ISnmpGetOperation, SnmpGetOperation>();
 builder.Services.AddScoped<ISnmpGetNextOperation, SnmpGetNextOperation>();
 builder.Services.AddScoped<ISnmpWalkOperation, SnmpWalkOperation>();
 builder.Services.AddScoped<ISnmpSetOperation, SnmpSetOperation>();
+
+builder.Services.AddScoped<ISnmpRequestManager, SnmpRequestManager>();
+
+builder.Services.AddScoped<ISnmpGetRequestedEventHandler, SnmpGetRequestedEventHandler>();
+builder.Services.AddScoped<ISnmpWalkRequestedEventHandler, SnmpWalkRequestedEventHandler>();
+builder.Services.AddScoped<ISnmpGetNextRequestedEventHandler, SnmpGetNextRequestedEventHandler>();
+builder.Services.AddScoped<ISnmpSetRequestedEventHandler, SnmpSetRequestedEventHandler>();
+;
+builder.Services.AddScoped<IDeviceDAL, DeviceDAL>();
 var host = builder.Build();
 host.Run();

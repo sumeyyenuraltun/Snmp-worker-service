@@ -38,7 +38,7 @@ namespace Snmp.EventWorker.Snmp.Providers
                     endpoint,
                     new OctetString(request.Credential.Community!),
                     variables,
-                    5000),
+                    request.TimeoutMilliseconds),
                 cancellationToken);
 
             if (result.Count > 0)
@@ -62,11 +62,34 @@ namespace Snmp.EventWorker.Snmp.Providers
                      new OctetString(request.Credential.Community!),
                      new ObjectIdentifier(request.Oid),
                      result,
-                     5000,
+                     request.TimeoutMilliseconds,
                       WalkMode.WithinSubtree
                  ), cancellationToken);
             return result;
 
+        }
+        public async Task<string?> GetNextAsync(SnmpRequest request,CancellationToken cancellationToken = default)
+        {
+            var endpoint = new IPEndPoint(
+                IPAddress.Parse(request.IpAddress),
+                request.Port);
+
+            var variables = new List<Variable>
+           {
+              new Variable(new ObjectIdentifier(request.Oid))
+           };
+
+            var getNextRequest = new GetNextRequestMessage(Messenger.NextRequestId, VersionCode.V2,new OctetString(request.Credential.Community!),variables);
+
+            var response = await Task.Run(
+                () => getNextRequest.GetResponse(request.TimeoutMilliseconds, endpoint),
+                cancellationToken);
+
+            var pdu = response.Pdu();
+
+            return pdu.Variables.Count > 0
+                ? pdu.Variables[0].Data.ToString()
+                : null;
         }
     }
 }
