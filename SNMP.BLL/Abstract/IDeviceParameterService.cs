@@ -1,4 +1,5 @@
 ﻿using Snmp.Business.DTOs.DeviceParameter;
+using Snmp.Business.Results;
 using Snmp.DataAccess.Concrete;
 using System;
 using System.Collections.Generic;
@@ -8,12 +9,14 @@ namespace Snmp.Business.Abstract
 {
     public interface IDeviceParameterService
     {
-        Task<List<DeviceParameterDTO>> GetByDeviceIdAsync(int deviceId);
+        Task<Result<List<DeviceParameterDTO>>> GetByDeviceIdAsync(int deviceId);
 
-        Task<DeviceParameterDTO> AddAsync(AddDeviceParameterDTO addDeviceParameterDTO, CancellationToken cancellationToken);
+        Task<Result<DeviceParameterDTO>> GetByIdAsync(int id);
 
-        Task DeleteAsync(int id, CancellationToken cancellationToken);
-        Task<DeviceParameterDTO> UpdateAsync(UpdateDeviceParameterDTO updateDeviceParameterDTO, CancellationToken cancellationToken);
-        Task<DeviceParameterDTO?> GetByIdAsync(int id);
+        Task<Result> AddAsync(AddDeviceParameterDTO addDeviceParameterDTO,CancellationToken cancellationToken);
+
+        Task<Result> UpdateAsync(UpdateDeviceParameterDTO updateDeviceParameterDTO,CancellationToken cancellationToken);
+
+        Task<Result> DeleteAsync(int id,CancellationToken cancellationToken);
     }
 }

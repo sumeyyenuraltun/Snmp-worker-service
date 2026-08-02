@@ -1,15 +1,33 @@
 ﻿using Snmp.Business.Abstract;
+using Snmp.DataAccess.Abstract;
+using SNMP.ENTITY.Concrete;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 
 namespace Snmp.Business.Concrete
 {
     public class OutboxService : IOutboxService
     {
-        public Task AddMessageAsync<T>(T @event, CancellationToken cancellationToken = default) where T : class
+        private readonly IOutboxMessageDAL _outboxMessageDAL;
+
+        public OutboxService(IOutboxMessageDAL outboxMessageDAL)
         {
-            throw new NotImplementedException();
+            _outboxMessageDAL = outboxMessageDAL;
+        }
+
+        public async Task AddMessageAsync<T>(T @event, CancellationToken cancellationToken = default) where T : class
+        {
+            var message = new OutboxMessage
+            {
+                EventType = typeof(T).AssemblyQualifiedName!,
+                Payload = JsonSerializer.Serialize(@event),
+                OccurredOn = DateTime.UtcNow,
+                IsProcessed = false
+            };
+
+            await _outboxMessageDAL.AddAsync(message, cancellationToken);
         }
     }
 }

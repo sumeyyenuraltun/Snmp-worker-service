@@ -1,4 +1,5 @@
 ﻿using Snmp.Business.DTOs.SnmpCredentials;
+using Snmp.Business.Results;
 using Snmp.DataAccess.Concrete;
 using System;
 using System.Collections.Generic;
@@ -8,15 +9,15 @@ namespace Snmp.Business.Abstract
 {
     public interface ISnmpCredentialService
     {
-        Task AddAsync(AddSnmpCredentialDTO dto, CancellationToken cancellationToken);
+        Task<Result> AddAsync(AddSnmpCredentialDTO dto, CancellationToken cancellationToken);
 
-        Task UpdateAsync(UpdateSnmpCredentialDTO dto);
+        Task<Result> UpdateAsync(UpdateSnmpCredentialDTO dto, CancellationToken cancellationToken);
 
-        Task DeleteAsync(int id);
+        Task<Result> DeleteAsync(int id, CancellationToken cancellationToken);
 
-        Task<SnmpCredentialDTO?> GetByDeviceIdAsync(int deviceId);
-        Task<List<SnmpCredentialDTO>> GetAllAsync();
+        Task<Result<SnmpCredentialDTO>> GetByDeviceIdAsync(int deviceId);
+        Task<Result<List<SnmpCredentialDTO>>> GetAllAsync();
 
-        Task<SnmpCredentialDTO?> GetByIdAsync(int id);
+        Task<Result<SnmpCredentialDTO>> GetByIdAsync(int id);
     }
 }

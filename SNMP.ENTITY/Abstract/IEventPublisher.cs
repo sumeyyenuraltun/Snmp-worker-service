@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SNMP.ENTITY.Abstract
+namespace Snmp.Entity.Abstract
 {
     public interface IEventPublisher
     {

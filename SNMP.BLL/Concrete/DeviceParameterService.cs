@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Snmp.Business.Abstract;
 using Snmp.Business.DTOs.DeviceParameter;
+using Snmp.Business.Results;
 using Snmp.DataAccess.Abstract;
 using Snmp.DataAccess.Concrete;
 using Snmp.Entity.Concrete;
@@ -14,67 +15,76 @@ namespace Snmp.Business.Concrete
     {
         private readonly IDeviceParameterDAL _deviceParameterDAL;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
 
-
-        public DeviceParameterService(IDeviceParameterDAL deviceParameterDAL, IMapper mapper)
+        public DeviceParameterService(IDeviceParameterDAL deviceParameterDAL, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _deviceParameterDAL = deviceParameterDAL;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
           
         }
 
-        public async Task<List<DeviceParameterDTO>> GetByDeviceIdAsync(int deviceId)
+        public async Task<Result<List<DeviceParameterDTO>>> GetByDeviceIdAsync(int deviceId)
         {
             var entities = await _deviceParameterDAL.GetByDeviceIdAsync(deviceId);
 
-            return _mapper.Map<List<DeviceParameterDTO>>(entities);
+            var dto = _mapper.Map<List<DeviceParameterDTO>>(entities);
+
+            return Result<List<DeviceParameterDTO>>.Success(dto);
         }
 
-        public async Task<DeviceParameterDTO> AddAsync(AddDeviceParameterDTO addDeviceParameterDTO, CancellationToken cancellationToken)
+        public async Task<Result> AddAsync(AddDeviceParameterDTO addDeviceParameterDTO, CancellationToken cancellationToken)
         {
             var entity = _mapper.Map<DeviceParameter>(addDeviceParameterDTO);
 
-            await _deviceParameterDAL.AddAsync(entity,cancellationToken);
-          
+            await _deviceParameterDAL.AddAsync(entity, cancellationToken);
 
-            return _mapper.Map<DeviceParameterDTO>(entity);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return Result.Success();
         }
 
-        public async Task DeleteAsync(int id, CancellationToken cancellationToken)
+        public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken)
         {
             var entity = await _deviceParameterDAL.GetByIdAsync(id);
 
             if (entity == null)
-                throw new Exception("Device parameter not found.");
+                return Result.Failure("Device parameter not found.");
 
             await _deviceParameterDAL.DeleteAsync(entity);
-      
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return Result.Success();
+
         }
-        public async Task<DeviceParameterDTO> UpdateAsync(UpdateDeviceParameterDTO updateDeviceParameterDTO, CancellationToken cancellationToken)
+        public async Task<Result> UpdateAsync(UpdateDeviceParameterDTO updateDeviceParameterDTO, CancellationToken cancellationToken)
         {
             var entity = await _deviceParameterDAL.GetByIdAsync(updateDeviceParameterDTO.Id);
 
             if (entity == null)
-                throw new Exception("DeviceParameter not found.");
+                return Result.Failure("Device parameter not found.");
 
             entity.DeviceId = updateDeviceParameterDTO.DeviceId;
             entity.ParameterId = updateDeviceParameterDTO.ParameterId;
 
             await _deviceParameterDAL.UpdateAsync(entity);
-         
 
-            return _mapper.Map<DeviceParameterDTO>(entity);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return Result.Success();
+
         }
-        public async Task<DeviceParameterDTO?> GetByIdAsync(int id)
+        public async Task<Result<DeviceParameterDTO>> GetByIdAsync(int id)
         {
-            var entity = await _deviceParameterDAL.GetAsync(
-                x => x.Id == id,
-                x => x.Parameter);
+            var entity = await _deviceParameterDAL.GetAsync(x => x.Id == id,x => x.Parameter);
 
             if (entity == null)
-                return null;
+                return Result<DeviceParameterDTO>.Failure("Device parameter not found.");
 
-            return _mapper.Map<DeviceParameterDTO>(entity);
+            var dto = _mapper.Map<DeviceParameterDTO>(entity);
+
+            return Result<DeviceParameterDTO>.Success(dto);
         }
 
       

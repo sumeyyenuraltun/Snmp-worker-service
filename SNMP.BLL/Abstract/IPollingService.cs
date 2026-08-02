@@ -1,4 +1,5 @@
 ﻿using Snmp.Business.DTOs.Polling;
+using Snmp.Business.Results;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +8,7 @@ namespace Snmp.Business.Abstract
 {
     public interface IPollingService
     {
-        Task StartAsync(StartPollingDTO startPollingDTO, CancellationToken cancellationToken);
-        Task StopAsync(StopPollingDTO stopPollingDTO, CancellationToken cancellationToken);
+        Task<Result> StartAsync(StartPollingDTO startPollingDTO, CancellationToken cancellationToken);
+        Task<Result> StopAsync(StopPollingDTO stopPollingDTO, CancellationToken cancellationToken);
     }
 }

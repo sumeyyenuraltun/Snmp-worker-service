@@ -21,7 +21,7 @@ namespace SNMP.API.Controllers
         public async Task<IActionResult> GetAll()
         {
             var result = await _deviceService.GetAllAsync();
-            return Ok(result);
+            return Ok(result.Value);
         }
 
         [HttpGet("{id}")]
@@ -29,8 +29,8 @@ namespace SNMP.API.Controllers
         {
             var result = await _deviceService.GetByIdAsync(id);
 
-            if (result == null)
-                return NotFound();
+            if (!result.IsSuccess)
+                return NotFound(result.Error);
 
             return Ok(result);
         }
@@ -38,21 +38,33 @@ namespace SNMP.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] AddDeviceDTO addDeviceDTO, CancellationToken cancellationToken)
         {
-            await _deviceService.AddAsync(addDeviceDTO, cancellationToken);
-            return StatusCode(201);
+            var result = await _deviceService.AddAsync(addDeviceDTO, cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
+            return StatusCode(StatusCodes.Status201Created);
         }
 
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] UpdateDeviceDTO updateDeviceDTO, CancellationToken cancellationToken)
         {
-            await _deviceService.UpdateAsync(updateDeviceDTO, cancellationToken);
+            var result = await _deviceService.UpdateAsync(updateDeviceDTO, cancellationToken);
+
+            if (!result.IsSuccess)
+                return NotFound(result.Error);
+
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            await _deviceService.DeleteAsync(id, cancellationToken);
+            var result = await _deviceService.DeleteAsync(id, cancellationToken);
+
+            if (!result.IsSuccess)
+                return NotFound(result.Error);
+
             return NoContent();
         }
     }

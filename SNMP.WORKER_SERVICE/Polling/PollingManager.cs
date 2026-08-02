@@ -58,13 +58,13 @@ namespace Snmp.EventWorker.Polling
                     {
                         using var scope = _serviceScopeFactory.CreateScope();
 
-                        var credentialService = scope.ServiceProvider.GetRequiredService<ISnmpCredentialService>();
-                        var deviceParameterService = scope.ServiceProvider.GetRequiredService<IDeviceParameterService>();
+                        var credentialDAL = scope.ServiceProvider.GetRequiredService<ISnmpCredentialDAL>();
+                        var deviceParameterDAL = scope.ServiceProvider.GetRequiredService<IDeviceParameterDAL>();
                         var redisService = scope.ServiceProvider.GetRequiredService<IRedisService>();
                         var snmpService = scope.ServiceProvider.GetRequiredService<ISnmpService>();
 
-                        var credentialEntity = await credentialService.GetByDeviceIdAsync(eventMessage.DeviceId);
-                        var deviceParameters = await deviceParameterService.GetByDeviceIdAsync(eventMessage.DeviceId);
+                        var credentialEntity = await credentialDAL.GetByDeviceIdAsync(eventMessage.DeviceId);
+                        var deviceParameters = await deviceParameterDAL.GetByDeviceIdAsync(eventMessage.DeviceId);
 
                         if (credentialEntity == null)
                         {
@@ -94,7 +94,7 @@ namespace Snmp.EventWorker.Polling
                                     {
                                         IpAddress = eventMessage.IpAddress,
                                         Port = eventMessage.Port,
-                                        Oid = parameter.Oid,
+                                        Oid = parameter.Parameter.Oid,
                                         Credential = credentialDto
                                     };
                                     var result = await snmpService.GetAsync(request, cts.Token);
@@ -105,19 +105,19 @@ namespace Snmp.EventWorker.Polling
                                         {
                                             DeviceId = eventMessage.DeviceId,
                                             ParameterId = parameter.ParameterId,
-                                            Oid = parameter.Oid,
+                                            Oid = parameter.Parameter.Oid,
                                             Value = result,
                                             Timestamp = DateTime.UtcNow
                                         });
                                     }
                                     _logger.LogInformation(
-                                    "Parameter: {Parameter}, Value: {Value}",parameter.ParameterName,result);
+                                    "Parameter: {Parameter}, Value: {Value}",parameter.Parameter.Name,result);
 
                                     _logger.LogInformation("SNMP Result for Device {DeviceId}: {Result}", eventMessage.DeviceId, result);
                                 }
                                 catch (Exception ex) 
                                 {
-                                    _logger.LogError(ex, "SNMP query failed. DeviceId:{DeviceId}, OID:{Oid}", eventMessage.DeviceId, parameter.Oid);
+                                    _logger.LogError(ex, "SNMP query failed. DeviceId:{DeviceId}, OID:{Oid}", eventMessage.DeviceId, parameter.Parameter.Oid);
                                 }
                                 
                             }

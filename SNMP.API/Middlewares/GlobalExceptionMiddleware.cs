@@ -1,6 +1,4 @@
 ﻿using Snmp.Business.DTOs.Common;
-using System.Net;
-using System.Reflection.Metadata;
 using System.Text.Json;
 
 namespace Snmp.WebAPI.Middlewares
@@ -26,14 +24,14 @@ namespace Snmp.WebAPI.Middlewares
             catch(Exception ex)
             { 
                 _logger.LogError(ex, "An unexpected error occurred in the system! Request: {Path}", context.Request.Path);
-                await HandleExceptionAsync(context,ex);
+                await HandleExceptionAsync(context);
 
             }
         }
 
-        private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+        private static Task HandleExceptionAsync(HttpContext context)
         {
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/json";
 
             ErrorResult result = new ErrorResult
@@ -41,8 +39,8 @@ namespace Snmp.WebAPI.Middlewares
                 StatusCode = context.Response.StatusCode,
                 Message = "A server error occurred during the process. Please try again later"
             };
-            string json = JsonSerializer.Serialize(result);
-            return context.Response.WriteAsync(json);
+
+            return context.Response.WriteAsync(JsonSerializer.Serialize(result));
         }
     }
 }

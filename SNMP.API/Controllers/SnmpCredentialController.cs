@@ -20,7 +20,11 @@ namespace Snmp.WebAPI.Controllers
         public async Task<IActionResult> GetAll()
         {
             var result = await _snmpCredentialService.GetAllAsync();
-            return Ok(result);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
+            return Ok(result.Value);
         }
 
         [HttpGet("{id}")]
@@ -28,30 +32,42 @@ namespace Snmp.WebAPI.Controllers
         {
             var result = await _snmpCredentialService.GetByIdAsync(id);
 
-            if (result == null)
-                return NotFound();
+            if (!result.IsSuccess)
+                return NotFound(result.Error);
 
-            return Ok(result);
+            return Ok(result.Value);
         }
 
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] AddSnmpCredentialDTO addSnmpCredentialDTO, CancellationToken cancellationToken)
         {
-            await _snmpCredentialService.AddAsync(addSnmpCredentialDTO,cancellationToken);
-            return StatusCode(201);
+            var result = await _snmpCredentialService.AddAsync(addSnmpCredentialDTO, cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
+            return StatusCode(StatusCodes.Status201Created);
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] UpdateSnmpCredentialDTO updateSnmpCredentialDTO)
+        public async Task<IActionResult> Update([FromBody] UpdateSnmpCredentialDTO updateSnmpCredentialDTO, CancellationToken cancellationToken)
         {
-            await _snmpCredentialService.UpdateAsync(updateSnmpCredentialDTO);
+            var result = await _snmpCredentialService.UpdateAsync(updateSnmpCredentialDTO, cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            await _snmpCredentialService.DeleteAsync(id);
+            var result = await _snmpCredentialService.DeleteAsync(id, cancellationToken);
+
+            if (!result.IsSuccess)
+                return NotFound(result.Error);
+
             return NoContent();
         }
     }

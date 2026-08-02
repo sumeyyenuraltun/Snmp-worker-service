@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
+using Snmp.Business.Abstract;
 using Snmp.Business.DTOs.Devices;
+using Snmp.Business.Results;
 using Snmp.DataAccess.Abstract;
 using SNMP.BLL.Abstract;
 using SNMP.DAL.Abstract;
 using SNMP.DAL.Concrete;
-using SNMP.ENTITY.Abstract;
 using SNMP.ENTITY.Concrete;
 using SNMP.ENTITY.Events;
 using SNMP.ENTITY.Events.Device;
@@ -18,64 +19,41 @@ namespace SNMP.BLL.Concrete
     {
         private readonly IDeviceDAL _deviceDAL;
         private readonly IMapper _mapper;
-        private readonly IEventPublisher _eventPublisher;
+        private readonly IOutboxService _outboxService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public DeviceService(IDeviceDAL deviceDAL, IMapper mapper, IEventPublisher eventPublisher)
+        public DeviceService(IDeviceDAL deviceDAL, IMapper mapper, IOutboxService outboxService, IUnitOfWork unitOfWork)
         {
             _deviceDAL = deviceDAL;
             _mapper = mapper;
-            _eventPublisher = eventPublisher;
+            _outboxService = outboxService;
+            _unitOfWork = unitOfWork;
         
         }
 
-        public async Task AddAsync( AddDeviceDTO dto, CancellationToken cancellationToken)
+        public async Task<Result> AddAsync( AddDeviceDTO dto, CancellationToken cancellationToken)
         {
-            try
-            {
-                var entity = _mapper.Map<Device>(dto);
+            var entity = _mapper.Map<Device>(dto);
 
-                await _deviceDAL.AddAsync(entity, cancellationToken);
+            await _deviceDAL.AddAsync(entity, cancellationToken);
 
+            var deviceCreatedEvent = new DeviceCreatedEvent(
+                entity.IpAddress,
+                entity.DeviceName,
+                entity.Port,
+                entity.CreatedAt);
+            await _outboxService.AddMessageAsync(deviceCreatedEvent, cancellationToken);
 
-                var deviceCreatedEvent = new DeviceCreatedEvent(
-                    entity.IpAddress,
-                    entity.DeviceName,
-                    entity.Port,
-                    entity.CreatedAt
-                    
-                );
-                deviceCreatedEvent.AggregateId = entity.Id;
-
-
-                await _eventPublisher.PublishAsync(
-                    deviceCreatedEvent,
-                    cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                var failedEvent = new DeviceCreationFailedEvent(
-                    dto.IpAddress,
-                    dto.DeviceName,
-                    dto.Port,
-                    ex.Message,
-                    ex.InnerException?.Message
-                );
-
-
-                await _eventPublisher.PublishAsync(
-                    failedEvent,
-                    cancellationToken);
-
-                throw;
-            }
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return Result.Success();
         }
 
-        public async Task UpdateAsync(UpdateDeviceDTO dto, CancellationToken cancellationToken)
+        public async Task<Result> UpdateAsync(UpdateDeviceDTO dto, CancellationToken cancellationToken)
         {
             var entity = await _deviceDAL.GetAsync(x => x.Id == dto.Id);
 
             if (entity == null)
-                throw new Exception("Device couldn't find.");
+                return Result.Failure("Device couldn't find.");
 
             var oldIpAddress = entity.IpAddress;
             var oldPort = entity.Port;
@@ -88,49 +66,47 @@ namespace SNMP.BLL.Concrete
 
             if(oldIpAddress != entity.IpAddress || oldPort != entity.Port)
             {
-                await _eventPublisher.PublishAsync(new DeviceUpdatedEvent(
-                    entity.Id,
-                    entity.IpAddress,
-                    entity.Port
-                    ), cancellationToken);
+                await _outboxService.AddMessageAsync(new DeviceUpdatedEvent(entity.Id, entity.IpAddress, entity.Port), cancellationToken);
             }
-
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return Result.Success();
         }
 
-        public async Task DeleteAsync(int id, CancellationToken cancellationToken)
+        public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken)
         {
             var entity = await _deviceDAL.GetAsync(x => x.Id == id);
 
             if (entity == null)
-                throw new Exception("Device couldn't find.");
+                return Result.Failure("Device couldn't find.");
 
             entity.IsActive = false;
             entity.UpdatedAt = DateTime.UtcNow;
 
             await _deviceDAL.DeleteAsync(entity);
 
-            await _eventPublisher.PublishAsync(new DeviceDeletedEvent(
-                entity.Id,
-                entity.IpAddress,
-                entity.DeviceName
-                ),cancellationToken);
+            await _outboxService.AddMessageAsync(new DeviceDeletedEvent(entity.Id,entity.IpAddress,entity.DeviceName), cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return Result.Success();
         }
 
-        public async Task<List<DeviceDTO>> GetAllAsync()
+        public async Task<Result<List<DeviceDTO>>> GetAllAsync()
         {
             var devices = await _deviceDAL.GetAllAsync(x => x.IsActive);
 
-            return _mapper.Map<List<DeviceDTO>>(devices);
+           var dto = _mapper.Map<List<DeviceDTO>>(devices);
+           return Result<List<DeviceDTO>>.Success(dto);
         }
 
-        public async Task<DeviceDTO?> GetByIdAsync(int id)
+        public async Task<Result<DeviceDTO>> GetByIdAsync(int id)
         {
             var device = await _deviceDAL.GetAsync(x => x.Id == id && x.IsActive);
 
             if (device == null)
-                return null;
+                return Result<DeviceDTO>.Failure("Device couldn't find.");
 
-            return _mapper.Map<DeviceDTO>(device);
+            var dto = _mapper.Map<DeviceDTO>(device);
+
+            return Result<DeviceDTO>.Success(dto);
         }
     }
 }

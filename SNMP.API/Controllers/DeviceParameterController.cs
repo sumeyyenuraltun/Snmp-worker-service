@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Snmp.Business.Abstract;
 using Snmp.Business.DTOs.DeviceParameter;
+using Snmp.Business.Results;
 
 namespace Snmp.WebAPI.Controllers
 {
@@ -20,7 +21,11 @@ namespace Snmp.WebAPI.Controllers
         public async Task<IActionResult> GetByDeviceId(int deviceId)
         {
             var result = await _deviceParameterService.GetByDeviceIdAsync(deviceId);
-            return Ok(result);
+
+            if (!result.IsSuccess)
+                return NotFound(result.Error);
+
+            return Ok(result.Value);
         }
 
         [HttpGet("{id}")]
@@ -28,30 +33,42 @@ namespace Snmp.WebAPI.Controllers
         {
             var result = await _deviceParameterService.GetByIdAsync(id);
 
-            if (result == null)
-                return NotFound();
+            if (!result.IsSuccess)
+                return NotFound(result.Error);
 
-            return Ok(result);
+            return Ok(result.Value);
         }
 
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] AddDeviceParameterDTO addDeviceParameterDTO, CancellationToken cancellationToken)
         {
-            await _deviceParameterService.AddAsync(addDeviceParameterDTO,cancellationToken);
-            return StatusCode(201);
+            var result = await _deviceParameterService.AddAsync(addDeviceParameterDTO, cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
+            return StatusCode(StatusCodes.Status201Created);
         }
 
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] UpdateDeviceParameterDTO updateDeviceParameterDTO, CancellationToken cancellationToken)
         {
-            await _deviceParameterService.UpdateAsync(updateDeviceParameterDTO, cancellationToken);
+            var result = await _deviceParameterService.UpdateAsync(updateDeviceParameterDTO, cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            await _deviceParameterService.DeleteAsync(id, cancellationToken);
+            var result = await _deviceParameterService.DeleteAsync(id, cancellationToken);
+
+            if (!result.IsSuccess)
+                return NotFound(result.Error);
+
             return NoContent();
         }
     }

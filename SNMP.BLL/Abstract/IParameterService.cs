@@ -1,4 +1,5 @@
 ﻿using Snmp.Business.DTOs.Parameter;
+using Snmp.Business.Results;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,14 +8,14 @@ namespace Snmp.Business.Abstract
 {
     public interface IParameterService
     {
-        Task<List<ParameterDTO>> GetAllAsync();
+        Task<Result<List<ParameterDTO>>> GetAllAsync();
 
-        Task<ParameterDTO?> GetByIdAsync(int id);
+        Task<Result<ParameterDTO>> GetByIdAsync(int id);
 
-        Task<ParameterDTO> AddAsync(AddParameterDTO addParameterDTO, CancellationToken cancellationToken);
+        Task<Result> AddAsync(AddParameterDTO addParameterDTO, CancellationToken cancellationToken);
 
-        Task<ParameterDTO> UpdateAsync(UpdateParameterDTO updateParameterDTO);
+        Task<Result> UpdateAsync(UpdateParameterDTO updateParameterDTO, CancellationToken cancellationToken);
 
-        Task DeleteAsync(int id);
+        Task<Result> DeleteAsync(int id, CancellationToken cancellationToken);
     }
 }

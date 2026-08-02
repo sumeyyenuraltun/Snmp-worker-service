@@ -1,6 +1,7 @@
 //using Snmp.WorkerService;
 
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using Snmp.Business.Abstract;
 using Snmp.Business.Concrete;
 using Snmp.Business.Mapping;
@@ -34,7 +35,12 @@ using SNMP.DAL.Context;
 using StackExchange.Redis;
 using System.Text.Json;
 
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.Console()
+    .CreateLogger();
 var builder = Host.CreateApplicationBuilder(args);
+builder.Services.AddSerilog();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -97,7 +103,7 @@ builder.Services.AddScoped<ISnmpGetRequestedEventHandler, SnmpGetRequestedEventH
 builder.Services.AddScoped<ISnmpWalkRequestedEventHandler, SnmpWalkRequestedEventHandler>();
 builder.Services.AddScoped<ISnmpGetNextRequestedEventHandler, SnmpGetNextRequestedEventHandler>();
 builder.Services.AddScoped<ISnmpSetRequestedEventHandler, SnmpSetRequestedEventHandler>();
-;
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IDeviceDAL, DeviceDAL>();
 var host = builder.Build();
 host.Run();

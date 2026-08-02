@@ -20,15 +20,29 @@ namespace Snmp.WebAPI.Controllers
         [HttpPost("start")]
         public async Task<IActionResult> Start(StartPollingDTO startPollingDTO, CancellationToken cancellationToken)
         {
-            await _pollingService.StartAsync(startPollingDTO, cancellationToken);
-            return Ok("Polling started");
+            var result = await _pollingService.StartAsync(startPollingDTO, cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
+            return Ok(new
+            {
+                message = "Polling started successfully."
+            });
         }
 
         [HttpPost("stop")]
         public async Task<IActionResult> Stop(StopPollingDTO stopPollingDTO, CancellationToken cancellationToken)
         {
-            await _pollingService.StopAsync(stopPollingDTO, cancellationToken);
-            return Ok("Polling stoped");
+            var result = await _pollingService.StopAsync(stopPollingDTO, cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
+            return Ok(new
+            {
+                message = "Polling stopped successfully."
+            });
         }
        
     }

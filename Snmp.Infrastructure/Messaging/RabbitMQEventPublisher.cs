@@ -3,7 +3,6 @@ using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using Snmp.Entity.Abstract;
 using Snmp.Infrastructure.Configuration;
-using SNMP.ENTITY.Abstract;
 using SNMP.ENTITY.Events.Device;
 using SNMP.ENTITY.Events.Snmp;
 using System;

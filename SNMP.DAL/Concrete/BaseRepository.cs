@@ -23,14 +23,12 @@ namespace SNMP.DAL.Concrete
             await _context.Set<TEntity>()
                 .AddAsync(entity, cancellationToken);
 
-            await _context.SaveChangesAsync(
-                cancellationToken);
         }
 
         public async Task DeleteAsync(TEntity entity)
         {
             _context.Set<TEntity>().Remove(entity);
-            await _context.SaveChangesAsync();
+            await Task.CompletedTask;
         }
 
         public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> filter,params Expression<Func<TEntity, object>>[] includes)
@@ -75,7 +73,7 @@ namespace SNMP.DAL.Concrete
         public async Task UpdateAsync(TEntity entity)
         {
             _context.Set<TEntity>().Update(entity);
-            await _context.SaveChangesAsync();
+            await Task.CompletedTask;
         }
     }
 }

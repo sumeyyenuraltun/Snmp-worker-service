@@ -2,25 +2,32 @@ using AutoMapper;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Snmp.Business.Abstract;
+using Snmp.Business.Concrete;
 using Snmp.Business.Mapping;
+using Snmp.Business.ValidationRules.DeviceValidator;
+using Snmp.DataAccess.Abstract;
+using Snmp.DataAccess.Concrete;
+using Snmp.Entity.Abstract;
 using Snmp.Infrastructure.Configuration;
 using Snmp.Infrastructure.Messaging;
+using Snmp.Infrastructure.Outbox;
+using Snmp.WebAPI.Middlewares;
 using SNMP.BLL.Abstract;
 using SNMP.BLL.Concrete;
 using SNMP.DAL.Abstract;
 using SNMP.DAL.Concrete;
 using SNMP.DAL.Context;
-using SNMP.ENTITY.Abstract;
 using StackExchange.Redis;
-using Serilog;
-using Snmp.WebAPI.Middlewares;
-using Snmp.DataAccess.Abstract;
-using Snmp.DataAccess.Concrete;
-using Snmp.Business.Abstract;
-using Snmp.Business.Concrete;
-using Snmp.Business.ValidationRules.DeviceValidator;
 
 var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.Console()
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Add services to the container.
 
@@ -53,14 +60,18 @@ builder.Services.Configure<RabbitMQSetting>(
     builder.Configuration.GetSection(RabbitMQSetting.SectionName) 
 );
 
-
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<AddDeviceDTOValidator>();
 
-Log.Logger = new LoggerConfiguration().MinimumLevel.Information().WriteTo.Console().CreateLogger();
+builder.Services.AddScoped<IOutboxMessageDAL, OutboxMessageDAL>();
 
-builder.Host.UseSerilog();
+builder.Services.AddScoped<IOutboxService, OutboxService>();
+builder.Services.AddScoped<IOutboxProcessor, OutboxProcessor>();
+
+builder.Services.AddHostedService<OutboxBackgroundService>();
+
 
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

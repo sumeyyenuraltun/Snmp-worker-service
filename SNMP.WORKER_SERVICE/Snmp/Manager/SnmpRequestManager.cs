@@ -118,10 +118,13 @@ namespace Snmp.EventWorker.Snmp.Manager
             if (device == null)
                 throw new Exception($"Device not found. DeviceId:{deviceId}");
 
-            var credential = await _credentialService.GetByDeviceIdAsync(deviceId);
+            var credentialResult = await _credentialService.GetByDeviceIdAsync(deviceId);
 
-            if (credential == null)
+            if (!credentialResult.IsSuccess || credentialResult.Value == null)
                 throw new Exception($"Credential not found. DeviceId:{deviceId}");
+
+            var credential = credentialResult.Value;
+
 
             return new SnmpRequest
             {
