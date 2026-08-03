@@ -19,7 +19,7 @@ namespace Snmp.EventWorker.Snmp.Helpers
         {
             var auth = _providerFactory.CreateAuthentication(snmpCredentialDTO.AuthProtocol!.Value, snmpCredentialDTO.AuthPassword!);
 
-            var privacy = _providerFactory.CreatePrivacy(snmpCredentialDTO.PrivacyProtocol!.Value, snmpCredentialDTO.PrivacyPassword!, auth);
+            var privacy = _providerFactory.CreatePrivacy(snmpCredentialDTO.PrivacyProtocol!.Value, snmpCredentialDTO.PrivacyPassword!, auth!);
 
             return new GetRequestMessage(VersionCode.V3,
             Messenger.NextMessageId,

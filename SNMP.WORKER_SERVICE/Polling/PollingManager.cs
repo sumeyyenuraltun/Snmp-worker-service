@@ -2,7 +2,9 @@
 using Snmp.Business.Abstract;
 using Snmp.Business.DTOs.SnmpCredentials;
 using Snmp.Business.DTOs.SnmpValue;
+using Snmp.Business.Queries.Abstract;
 using Snmp.DataAccess.Abstract;
+using Snmp.DataAccess.Concrete;
 using Snmp.Entity.Concrete;
 using Snmp.EventWorker.Redis.Repositories;
 using Snmp.EventWorker.Redis.Services;
@@ -58,33 +60,29 @@ namespace Snmp.EventWorker.Polling
                     {
                         using var scope = _serviceScopeFactory.CreateScope();
 
-                        var credentialDAL = scope.ServiceProvider.GetRequiredService<ISnmpCredentialDAL>();
-                        var deviceParameterDAL = scope.ServiceProvider.GetRequiredService<IDeviceParameterDAL>();
+                        var credentialQueryService = scope.ServiceProvider.GetRequiredService<ISnmpCredentialQueryService>();
+                        var deviceParameterQueryService = scope.ServiceProvider.GetRequiredService<IDeviceParameterQueryService>();
                         var redisService = scope.ServiceProvider.GetRequiredService<IRedisService>();
                         var snmpService = scope.ServiceProvider.GetRequiredService<ISnmpService>();
 
-                        var credentialEntity = await credentialDAL.GetByDeviceIdAsync(eventMessage.DeviceId);
-                        var deviceParameters = await deviceParameterDAL.GetByDeviceIdAsync(eventMessage.DeviceId);
+                        var credentialResult = await credentialQueryService.GetByDeviceIdAsync(eventMessage.DeviceId);
+                        var parameterResult = await deviceParameterQueryService.GetByDeviceIdAsync(eventMessage.DeviceId);
 
-                        if (credentialEntity == null)
+                        if (!parameterResult.IsSuccess || parameterResult.Value == null)
+                        {
+                            _logger.LogWarning("No parameters found. DeviceId:{DeviceId}", eventMessage.DeviceId);
+                            continue;
+                        }
+
+                        var deviceParameters = parameterResult.Value;
+
+                        if (!credentialResult.IsSuccess || credentialResult.Value == null)
                         {
                             _logger.LogWarning("Credentials not found for DeviceId: {DeviceId}. Polling skipped.", eventMessage.DeviceId);
                         }
                         else
                         {
-                            var credentialDto = new SnmpCredentialDTO
-                            {
-                                Id = credentialEntity.Id,
-                                DeviceId = credentialEntity.DeviceId,
-                                UserName = credentialEntity.UserName,
-                                SecurityLevel = credentialEntity.SecurityLevel,
-                                AuthProtocol = credentialEntity.AuthProtocol,
-                                PrivacyProtocol = credentialEntity.PrivacyProtocol,
-                                AuthPassword = credentialEntity.AuthPassword,
-                                PrivacyPassword = credentialEntity.PrivacyPassword,
-                                Version = credentialEntity.Version,
-                                Community = credentialEntity.Community
-                            };
+                            var credentialDto = credentialResult.Value!;
 
                             foreach (var parameter in deviceParameters)
                             {
@@ -94,7 +92,7 @@ namespace Snmp.EventWorker.Polling
                                     {
                                         IpAddress = eventMessage.IpAddress,
                                         Port = eventMessage.Port,
-                                        Oid = parameter.Parameter.Oid,
+                                        Oid = parameter.Oid,
                                         Credential = credentialDto
                                     };
                                     var result = await snmpService.GetAsync(request, cts.Token);
@@ -105,19 +103,19 @@ namespace Snmp.EventWorker.Polling
                                         {
                                             DeviceId = eventMessage.DeviceId,
                                             ParameterId = parameter.ParameterId,
-                                            Oid = parameter.Parameter.Oid,
+                                            Oid = parameter.Oid,
                                             Value = result,
                                             Timestamp = DateTime.UtcNow
                                         });
                                     }
                                     _logger.LogInformation(
-                                    "Parameter: {Parameter}, Value: {Value}",parameter.Parameter.Name,result);
+                                    "Parameter: {Parameter}, Value: {Value}",parameter.ParameterName,result);
 
                                     _logger.LogInformation("SNMP Result for Device {DeviceId}: {Result}", eventMessage.DeviceId, result);
                                 }
                                 catch (Exception ex) 
                                 {
-                                    _logger.LogError(ex, "SNMP query failed. DeviceId:{DeviceId}, OID:{Oid}", eventMessage.DeviceId, parameter.Parameter.Oid);
+                                    _logger.LogError(ex, "SNMP query failed. DeviceId:{DeviceId}, OID:{Oid}", eventMessage.DeviceId, parameter.Oid);
                                 }
                                 
                             }

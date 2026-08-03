@@ -3,9 +3,12 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Serilog.Sinks.Elasticsearch;
 using Snmp.Business.Abstract;
 using Snmp.Business.Concrete;
 using Snmp.Business.Mapping;
+using Snmp.Business.Queries.Abstract;
+using Snmp.Business.Queries.Concrete;
 using Snmp.Business.ValidationRules.DeviceValidator;
 using Snmp.DataAccess.Abstract;
 using Snmp.DataAccess.Concrete;
@@ -27,7 +30,19 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateLogger();
 
-builder.Host.UseSerilog();
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    var settings = context.Configuration.GetSection("ElasticSearch").Get<ElasticSearchSettings>();
+
+    configuration.ReadFrom.Configuration(context.Configuration)
+                 .WriteTo.Console()
+                 .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(settings.Uri))
+                 {
+                     AutoRegisterTemplate = true,
+                     IndexFormat = settings.IndexFormat
+                 });
+});
+
 
 // Add services to the container.
 
@@ -59,6 +74,7 @@ builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MapProfile>());
 builder.Services.Configure<RabbitMQSetting>(
     builder.Configuration.GetSection(RabbitMQSetting.SectionName) 
 );
+builder.Services.Configure<ElasticSearchSettings>(builder.Configuration.GetSection("ElasticSearch"));
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -72,11 +88,15 @@ builder.Services.AddScoped<IOutboxProcessor, OutboxProcessor>();
 
 builder.Services.AddHostedService<OutboxBackgroundService>();
 
-
+builder.Services.AddScoped<IDeviceQueryService, DeviceQueryService>();
+builder.Services.AddScoped<ISnmpCredentialQueryService, SnmpCredentialQueryService>();
+builder.Services.AddScoped<IDeviceParameterQueryService, DeviceParameterQueryService>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen(); 
+
+
 
 var app = builder.Build();
 

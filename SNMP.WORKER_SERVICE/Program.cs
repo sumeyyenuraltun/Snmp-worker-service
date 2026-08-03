@@ -5,6 +5,8 @@ using Serilog;
 using Snmp.Business.Abstract;
 using Snmp.Business.Concrete;
 using Snmp.Business.Mapping;
+using Snmp.Business.Queries.Abstract;
+using Snmp.Business.Queries.Concrete;
 using Snmp.DataAccess.Abstract;
 using Snmp.DataAccess.Concrete;
 using Snmp.EventWorker.BackgroundServices;
@@ -70,10 +72,9 @@ builder.Services.AddScoped<IEventStrategy, SnmpSetRequestedStrategy>();
 
 builder.Services.AddSingleton<IPollingManager, PollingManager>();
 
-builder.Services.AddScoped<ISnmpCredentialService, SnmpCredentialService>();
-builder.Services.AddScoped<IDeviceParameterService, DeviceParameterService>();
-builder.Services.AddScoped<ISnmpCredentialDAL, SnmpCredentialDAL>();
-builder.Services.AddScoped<IDeviceParameterDAL, DeviceParameterDAL>();
+builder.Services.AddScoped<ISnmpCredentialQueryService, SnmpCredentialQueryService>();
+builder.Services.AddScoped<IDeviceParameterQueryService, DeviceParameterQueryService>();
+builder.Services.AddScoped<IDeviceQueryService, DeviceQueryService>();
 
 builder.Services.AddSingleton<ISnmpProviderFactory, SnmpProviderFactory>();
 builder.Services.AddScoped<ISnmpService, SnmpService>();
@@ -105,5 +106,8 @@ builder.Services.AddScoped<ISnmpGetNextRequestedEventHandler, SnmpGetNextRequest
 builder.Services.AddScoped<ISnmpSetRequestedEventHandler, SnmpSetRequestedEventHandler>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IDeviceDAL, DeviceDAL>();
+builder.Services.AddScoped<ISnmpCredentialDAL, SnmpCredentialDAL>();
+builder.Services.AddScoped<IDeviceParameterDAL, DeviceParameterDAL>();
+
 var host = builder.Build();
 host.Run();

@@ -2,6 +2,7 @@
 using Snmp.Business.Abstract;
 using Snmp.Business.DTOs.SnmpCredentials;
 using Snmp.Business.DTOs.SnmpValue;
+using Snmp.Business.Queries.Abstract;
 using Snmp.DataAccess.Abstract;
 using Snmp.Entity.Concrete;
 using Snmp.EventWorker.Redis.Services;
@@ -19,22 +20,20 @@ namespace Snmp.EventWorker.Snmp.Manager
     public class SnmpRequestManager : ISnmpRequestManager
     {
         private readonly ILogger<SnmpRequestManager> _logger;
-        private readonly IDeviceDAL _deviceDAL;
-        private readonly IMapper _mapper;
-        private readonly ISnmpCredentialService _credentialService;
+        private readonly IDeviceQueryService _deviceQueryService;
+        private readonly ISnmpCredentialQueryService _credentialQueryService;
         private readonly ISnmpService _snmpService;
         private readonly IRedisService _redisService;
-        private readonly IDeviceParameterDAL _deviceParameterDAL;
+        private readonly IDeviceParameterQueryService _deviceParameterQueryService;
 
-        public SnmpRequestManager(ILogger<SnmpRequestManager> logger, IDeviceDAL deviceDAL, IMapper mapper, ISnmpCredentialService credentialService, ISnmpService snmpService, IRedisService redisService, IDeviceParameterDAL deviceParameterDAL)
+        public SnmpRequestManager(ILogger<SnmpRequestManager> logger, IDeviceQueryService deviceQueryService, ISnmpCredentialQueryService credentialQueryService, ISnmpService snmpService, IRedisService redisService, IDeviceParameterQueryService deviceParameterQueryService)
         {
             _logger = logger;
-            _deviceDAL = deviceDAL;
-            _mapper = mapper;
-            _credentialService = credentialService;
+            _deviceQueryService = deviceQueryService;
+            _credentialQueryService = credentialQueryService;
             _snmpService = snmpService;
             _redisService = redisService;
-            _deviceParameterDAL = deviceParameterDAL;
+            _deviceParameterQueryService = deviceParameterQueryService;
         }
 
         public async Task ExecuteGetAsync(SnmpGetRequestedEvent snmpGetRequestedEvent, CancellationToken cancellationToken = default)
@@ -113,12 +112,14 @@ namespace Snmp.EventWorker.Snmp.Manager
 
         private async Task<SnmpRequest> BuildRequestAsync(int deviceId, string oid, int timeoutMilliseconds)
         {
-            var device = await _deviceDAL.GetByIdAsync(deviceId);
+            var deviceResult = await _deviceQueryService.GetByIdAsync(deviceId);
 
-            if (device == null)
+            if (!deviceResult.IsSuccess || deviceResult.Value == null)
                 throw new Exception($"Device not found. DeviceId:{deviceId}");
 
-            var credentialResult = await _credentialService.GetByDeviceIdAsync(deviceId);
+            var device = deviceResult.Value;
+
+            var credentialResult = await _credentialQueryService.GetByDeviceIdAsync(deviceId);
 
             if (!credentialResult.IsSuccess || credentialResult.Value == null)
                 throw new Exception($"Credential not found. DeviceId:{deviceId}");
