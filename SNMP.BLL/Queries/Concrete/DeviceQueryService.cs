@@ -29,7 +29,7 @@ namespace Snmp.Business.Queries.Concrete
 
         public async Task<Result<DeviceDTO>> GetByIdAsync(int id)
         {
-            var device = _deviceDAL.GetAsync(x => x.Id == id && x.IsActive);
+            var device = await _deviceDAL.GetAsync(x => x.Id == id && x.IsActive);
 
             if(device == null) 
             {

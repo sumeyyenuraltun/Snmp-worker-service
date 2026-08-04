@@ -58,7 +58,7 @@ namespace Snmp.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Devices");
+                    b.ToTable("Devices", (string)null);
                 });
 
             modelBuilder.Entity("SNMP.ENTITY.Concrete.OutboxMessage", b =>
@@ -97,7 +97,7 @@ namespace Snmp.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("OutboxMessages");
+                    b.ToTable("OutboxMessages", (string)null);
                 });
 
             modelBuilder.Entity("SNMP.ENTITY.Concrete.SnmpCredential", b =>
@@ -149,7 +149,7 @@ namespace Snmp.DataAccess.Migrations
                     b.HasIndex("DeviceId")
                         .IsUnique();
 
-                    b.ToTable("SnmpCredentials");
+                    b.ToTable("SnmpCredentials", (string)null);
                 });
 
             modelBuilder.Entity("Snmp.Entity.Concrete.DeviceParameter", b =>
@@ -196,7 +196,7 @@ namespace Snmp.DataAccess.Migrations
 
                     b.HasIndex("ParameterId");
 
-                    b.ToTable("DeviceParameters");
+                    b.ToTable("DeviceParameters", (string)null);
                 });
 
             modelBuilder.Entity("Snmp.Entity.Concrete.Parameter", b =>
@@ -234,7 +234,7 @@ namespace Snmp.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Parameters");
+                    b.ToTable("Parameters", (string)null);
                 });
 
             modelBuilder.Entity("SNMP.ENTITY.Concrete.SnmpCredential", b =>

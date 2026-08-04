@@ -21,7 +21,7 @@ namespace Snmp.EventWorker.Polling
     public class PollingManager : IPollingManager
     {
         private readonly ILogger<PollingManager> _logger;
-        private readonly ConcurrentDictionary<int, CancellationTokenSource> _runningPollings = new();
+        private readonly ConcurrentDictionary<int, PollingSession> _sessions = new();
         private readonly IServiceScopeFactory _serviceScopeFactory;
     
         public PollingManager(ILogger<PollingManager> logger, IServiceScopeFactory serviceScopeFactory)
@@ -33,12 +33,12 @@ namespace Snmp.EventWorker.Polling
 
         public bool IsRunning(int deviceId)
         {
-            return _runningPollings.ContainsKey(deviceId);
+            return _sessions.ContainsKey(deviceId);
         }
 
         public Task StartAsync(DevicePollingStartedEvent eventMessage, CancellationToken cancellationToken)
         {
-            if (_runningPollings.ContainsKey(eventMessage.DeviceId))
+            if (_sessions.ContainsKey(eventMessage.DeviceId))
             {
                 _logger.LogWarning("Polling already running. DeviceId: {DeviceId}", eventMessage.DeviceId);
                 return Task.CompletedTask;
@@ -46,111 +46,129 @@ namespace Snmp.EventWorker.Polling
 
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-            if (!_runningPollings.TryAdd(eventMessage.DeviceId, cts))
+            using var scope = _serviceScopeFactory.CreateScope();
+
+            var credentialQueryService = scope.ServiceProvider.GetRequiredService<ISnmpCredentialQueryService>();
+            var deviceParameterQueryService = scope.ServiceProvider.GetRequiredService<IDeviceParameterQueryService>();
+
+            var credentialResult = credentialQueryService.GetByDeviceIdAsync(eventMessage.DeviceId).Result;
+            var parameterResult = deviceParameterQueryService.GetByDeviceIdAsync(eventMessage.DeviceId).Result;
+
+            if (!credentialResult.IsSuccess || credentialResult.Value == null)
             {
-                _logger.LogWarning("Polling already running. DeviceId: {DeviceId}", eventMessage.DeviceId);
+                _logger.LogWarning("Credentials not found. DeviceId:{DeviceId}", eventMessage.DeviceId);
                 return Task.CompletedTask;
             }
 
-            _ = Task.Run(async () =>
+            if (!parameterResult.IsSuccess || parameterResult.Value == null)
             {
-                try
+                _logger.LogWarning("No parameters found. DeviceId:{DeviceId}", eventMessage.DeviceId);
+                return Task.CompletedTask;
+            }
+
+            var session = new PollingSession
+            {
+                CancellationTokenSource = cts,
+                Context = new PollingContext
                 {
-                    while (!cts.Token.IsCancellationRequested)
-                    {
-                        using var scope = _serviceScopeFactory.CreateScope();
-
-                        var credentialQueryService = scope.ServiceProvider.GetRequiredService<ISnmpCredentialQueryService>();
-                        var deviceParameterQueryService = scope.ServiceProvider.GetRequiredService<IDeviceParameterQueryService>();
-                        var redisService = scope.ServiceProvider.GetRequiredService<IRedisService>();
-                        var snmpService = scope.ServiceProvider.GetRequiredService<ISnmpService>();
-
-                        var credentialResult = await credentialQueryService.GetByDeviceIdAsync(eventMessage.DeviceId);
-                        var parameterResult = await deviceParameterQueryService.GetByDeviceIdAsync(eventMessage.DeviceId);
-
-                        if (!parameterResult.IsSuccess || parameterResult.Value == null)
-                        {
-                            _logger.LogWarning("No parameters found. DeviceId:{DeviceId}", eventMessage.DeviceId);
-                            continue;
-                        }
-
-                        var deviceParameters = parameterResult.Value;
-
-                        if (!credentialResult.IsSuccess || credentialResult.Value == null)
-                        {
-                            _logger.LogWarning("Credentials not found for DeviceId: {DeviceId}. Polling skipped.", eventMessage.DeviceId);
-                        }
-                        else
-                        {
-                            var credentialDto = credentialResult.Value!;
-
-                            foreach (var parameter in deviceParameters)
-                            {
-                                try
-                                {
-                                    var request = new SnmpRequest
-                                    {
-                                        IpAddress = eventMessage.IpAddress,
-                                        Port = eventMessage.Port,
-                                        Oid = parameter.Oid,
-                                        Credential = credentialDto
-                                    };
-                                    var result = await snmpService.GetAsync(request, cts.Token);
-
-                                    if (result != null)
-                                    {
-                                        await redisService.SaveLatestValueAsync(new SnmpValue
-                                        {
-                                            DeviceId = eventMessage.DeviceId,
-                                            ParameterId = parameter.ParameterId,
-                                            Oid = parameter.Oid,
-                                            Value = result,
-                                            Timestamp = DateTime.UtcNow
-                                        });
-                                    }
-                                    _logger.LogInformation(
-                                    "Parameter: {Parameter}, Value: {Value}",parameter.ParameterName,result);
-
-                                    _logger.LogInformation("SNMP Result for Device {DeviceId}: {Result}", eventMessage.DeviceId, result);
-                                }
-                                catch (Exception ex) 
-                                {
-                                    _logger.LogError(ex, "SNMP query failed. DeviceId:{DeviceId}, OID:{Oid}", eventMessage.DeviceId, parameter.Oid);
-                                }
-                                
-                            }
-
-                        }
-
-                        await Task.Delay(
-                            TimeSpan.FromSeconds(eventMessage.IntervalSeconds),
-                            cts.Token);
-                    }
+                    Credential = credentialResult.Value,
+                    Parameters = parameterResult.Value,
+                    IpAddress = eventMessage.IpAddress,
+                    Port = eventMessage.Port,
+                    IntervalSeconds = eventMessage.IntervalSeconds
                 }
-                catch (OperationCanceledException)
-                {
-                    _logger.LogInformation("Polling cancelled. DeviceId: {DeviceId}", eventMessage.DeviceId);
-                }
-                finally
-                {
-                    _runningPollings.TryRemove(eventMessage.DeviceId, out _);
-                }
+            };
 
-            }, cts.Token);
+            if (!_sessions.TryAdd(eventMessage.DeviceId, session))
+            {
+                cts.Dispose();
+                return Task.CompletedTask;
+            }
 
-            _logger.LogInformation("Polling started. DeviceId: {DeviceId}", eventMessage.DeviceId);
+            _ = Task.Run(() => RunPollingAsync(eventMessage.DeviceId), cts.Token);
+
+            _logger.LogInformation("Polling started. DeviceId:{DeviceId}", eventMessage.DeviceId);
 
             return Task.CompletedTask;
         }
 
+        private async Task RunPollingAsync(int deviceId)
+        {
+            var session = _sessions[deviceId];
+            var context = session.Context;
+            var token = session.CancellationTokenSource.Token;
+
+            using var scope = _serviceScopeFactory.CreateScope();
+
+            var redisService = scope.ServiceProvider.GetRequiredService<IRedisService>();
+            var snmpService = scope.ServiceProvider.GetRequiredService<ISnmpService>();
+
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    foreach (var parameter in context.Parameters)
+                    {
+                        try
+                        {
+                            var request = new SnmpRequest
+                            {
+                                IpAddress = context.IpAddress,
+                                Port = context.Port,
+                                Oid = parameter.Oid,
+                                Credential = context.Credential
+                            };
+
+                            var result = await snmpService.GetAsync(request, token);
+
+                            if (result != null)
+                            {
+                                await redisService.SaveLatestValueAsync(new SnmpValue
+                                {
+                                    DeviceId = deviceId,
+                                    ParameterId = parameter.ParameterId,
+                                    Oid = parameter.Oid,
+                                    Value = result,
+                                    Timestamp = DateTime.UtcNow
+                                });
+                            }
+
+                            _logger.LogInformation(
+                                "Parameter:{Parameter}, Value:{Value}",
+                                parameter.ParameterName,
+                                result);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex,
+                                "SNMP query failed. DeviceId:{DeviceId}, OID:{Oid}",
+                                deviceId,
+                                parameter.Oid);
+                        }
+                    }
+
+                    await Task.Delay(
+                        TimeSpan.FromSeconds(context.IntervalSeconds),
+                        token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Polling cancelled. DeviceId:{DeviceId}", deviceId);
+            }
+            finally
+            {
+                _sessions.TryRemove(deviceId, out _);
+            }
+        }
         public Task StopAsync(int deviceId)
         {
-            if (_runningPollings.TryRemove(deviceId, out var cts))
+            if (_sessions.TryRemove(deviceId, out var session))
             {
-                cts.Cancel();
-                cts.Dispose();
+                session.CancellationTokenSource.Cancel();
+                session.CancellationTokenSource.Dispose();
 
-                _logger.LogInformation("Polling stopped. DeviceId: {DeviceId}", deviceId);
+                _logger.LogInformation("Polling stopped. DeviceId:{DeviceId}", deviceId);
             }
 
             return Task.CompletedTask;

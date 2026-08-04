@@ -94,7 +94,8 @@ while (true)
                 if (oidValues.TryGetValue(variable.Id.ToString(), out var value))
                 {
                     result.Add(new Variable(variable.Id, value));
-                    Console.WriteLine($"GET {variable.Id} => {value}");
+                    Console.WriteLine(
+    $"GET REQUEST OID:{variable.Id} RESPONSE VALUE:{value} TYPE:{value.GetType().Name}");
                 }
                 else
                 {

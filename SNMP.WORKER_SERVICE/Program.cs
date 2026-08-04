@@ -45,7 +45,7 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddSerilog();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSqlConnection")));
 
 var redisConnection = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConn") ?? "localhost:6379");
 builder.Services.AddSingleton<IConnectionMultiplexer>(redisConnection);

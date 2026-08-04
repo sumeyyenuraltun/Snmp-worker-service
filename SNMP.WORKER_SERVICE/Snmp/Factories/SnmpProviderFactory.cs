@@ -33,6 +33,7 @@ namespace Snmp.EventWorker.Snmp.Helpers
             return privacyProtocol switch
             {
                 PrivacyProtocol.DES => new DESPrivacyProvider(new OctetString(privacyPassword), authentication),
+                PrivacyProtocol.AES128 => new AESPrivacyProvider(new OctetString(privacyPassword), authentication),
                 PrivacyProtocol.AES192 => new AES192PrivacyProvider(new OctetString(privacyPassword), authentication),
                 PrivacyProtocol.AES256 => new AES256PrivacyProvider(new OctetString(privacyPassword), authentication),
 

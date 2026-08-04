@@ -27,7 +27,7 @@ namespace Snmp.Business.Concrete
                 return Result.Failure("Device not found.");
 
             if (device.PollingEnabled)
-                return Result.Failure("Device not found.");
+                return Result.Failure("Polling is already running.");
 
             device.PollingEnabled = true;
             device.PollingIntervalSeconds = startPollingDTO.IntervalSeconds;
