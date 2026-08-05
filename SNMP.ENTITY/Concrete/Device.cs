@@ -10,8 +10,6 @@ namespace SNMP.ENTITY.Concrete
         public string IpAddress { get; set; }
         public string DeviceName { get; set; }
         public int Port { get; set; }
-        public bool PollingEnabled { get; set; }
-        public int PollingIntervalSeconds { get; set; }
         public SnmpCredential Credential { get; set; }
         public ICollection<DeviceParameter> DeviceParametres { get; set; } = new List<DeviceParameter>();
         

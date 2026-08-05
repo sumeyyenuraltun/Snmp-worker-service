@@ -5,13 +5,9 @@ using Snmp.Business.Results;
 using Snmp.DataAccess.Abstract;
 using SNMP.BLL.Abstract;
 using SNMP.DAL.Abstract;
-using SNMP.DAL.Concrete;
 using SNMP.ENTITY.Concrete;
-using SNMP.ENTITY.Events;
 using SNMP.ENTITY.Events.Device;
-using System;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace SNMP.BLL.Concrete
 {

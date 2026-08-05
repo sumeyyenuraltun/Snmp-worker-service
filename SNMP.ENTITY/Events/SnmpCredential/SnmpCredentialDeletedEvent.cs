@@ -3,18 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SNMP.ENTITY.Events.DeviceParameter
+namespace SNMP.ENTITY.Events.SnmpCredential
 {
-    public class DeviceParameterCreatedEvent : BaseEvent
+    public class SnmpCredentialDeletedEvent : BaseEvent
     {
-        public DeviceParameterCreatedEvent(int deviceId)
+        public SnmpCredentialDeletedEvent(int deviceId)
         {
             DeviceId = deviceId;
-            
         }
-
         public int DeviceId { get; }
-      
-
     }
 }

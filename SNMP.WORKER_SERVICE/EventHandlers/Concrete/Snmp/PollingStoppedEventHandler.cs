@@ -1,5 +1,5 @@
 ﻿using Snmp.EventWorker.EventHandlers.Abstract.Snmp;
-using Snmp.EventWorker.Polling;
+using Snmp.EventWorker.Snmp.Polling;
 using SNMP.ENTITY.Events.Snmp;
 using System;
 using System.Collections.Generic;

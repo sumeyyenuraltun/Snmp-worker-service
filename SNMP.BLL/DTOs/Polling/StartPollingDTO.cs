@@ -7,7 +7,5 @@ namespace Snmp.Business.DTOs.Polling
     public class StartPollingDTO
     {
         public int DeviceId { get; set; }
-
-        public int IntervalSeconds { get; set; }
     }
 }

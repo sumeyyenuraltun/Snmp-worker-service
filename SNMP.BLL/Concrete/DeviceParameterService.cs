@@ -3,11 +3,10 @@ using Snmp.Business.Abstract;
 using Snmp.Business.DTOs.DeviceParameter;
 using Snmp.Business.Results;
 using Snmp.DataAccess.Abstract;
-using Snmp.DataAccess.Concrete;
 using Snmp.Entity.Concrete;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using SNMP.ENTITY.Concrete;
+using SNMP.ENTITY.Events.DeviceParameter;
+
 
 namespace Snmp.Business.Concrete
 {
@@ -16,13 +15,14 @@ namespace Snmp.Business.Concrete
         private readonly IDeviceParameterDAL _deviceParameterDAL;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IOutboxService _outboxService;
 
-        public DeviceParameterService(IDeviceParameterDAL deviceParameterDAL, IMapper mapper, IUnitOfWork unitOfWork)
+        public DeviceParameterService(IDeviceParameterDAL deviceParameterDAL, IMapper mapper, IUnitOfWork unitOfWork, IOutboxService outboxService)
         {
             _deviceParameterDAL = deviceParameterDAL;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
-          
+            _outboxService = outboxService;
         }
 
         public async Task<Result<List<DeviceParameterDTO>>> GetByDeviceIdAsync(int deviceId)
@@ -40,6 +40,8 @@ namespace Snmp.Business.Concrete
 
             await _deviceParameterDAL.AddAsync(entity, cancellationToken);
 
+            await _outboxService.AddMessageAsync(new DeviceParameterCreatedEvent(entity.DeviceId), cancellationToken);
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success();
@@ -48,11 +50,14 @@ namespace Snmp.Business.Concrete
         public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken)
         {
             var entity = await _deviceParameterDAL.GetByIdAsync(id);
+            var deviceId = entity!.DeviceId;
 
             if (entity == null)
                 return Result.Failure("Device parameter not found.");
 
             await _deviceParameterDAL.DeleteAsync(entity);
+            await _outboxService.AddMessageAsync(new DeviceParameterDeletedEvent(deviceId),cancellationToken);
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success();
@@ -69,6 +74,7 @@ namespace Snmp.Business.Concrete
             entity.ParameterId = updateDeviceParameterDTO.ParameterId;
 
             await _deviceParameterDAL.UpdateAsync(entity);
+            await _outboxService.AddMessageAsync(new DeviceParameterUpdatedEvent(entity.DeviceId),cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -4,9 +4,6 @@ using Snmp.Business.Results;
 using Snmp.DataAccess.Abstract;
 using SNMP.DAL.Abstract;
 using SNMP.ENTITY.Events.Snmp;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Snmp.Business.Concrete
 {

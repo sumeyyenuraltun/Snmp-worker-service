@@ -4,9 +4,6 @@ using Snmp.Business.DTOs.Parameter;
 using Snmp.Business.Results;
 using Snmp.DataAccess.Abstract;
 using Snmp.Entity.Concrete;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Snmp.Business.Concrete
 {

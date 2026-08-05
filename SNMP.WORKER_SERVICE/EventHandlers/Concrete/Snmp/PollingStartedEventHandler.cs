@@ -1,5 +1,5 @@
 ﻿using Snmp.EventWorker.EventHandlers.Abstract.Snmp;
-using Snmp.EventWorker.Polling;
+using Snmp.EventWorker.Snmp.Polling;
 using SNMP.ENTITY.Events.Snmp;
 using System;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace Snmp.EventWorker.EventHandlers.Concrete.Snmp
         {
             ArgumentNullException.ThrowIfNull(devicePollingStartedEvent);
 
-            _logger.LogInformation("PollingStarted event received. DeviceId : {DeviceId} IpAddress: {IpAddress} Port : {Port}", devicePollingStartedEvent.AggregateId, devicePollingStartedEvent.IpAddress, devicePollingStartedEvent.Port);
+            _logger.LogInformation("PollingStarted event received. DeviceId", devicePollingStartedEvent.AggregateId);
 
             await _pollingManager.StartAsync(devicePollingStartedEvent,cancellationToken);
 

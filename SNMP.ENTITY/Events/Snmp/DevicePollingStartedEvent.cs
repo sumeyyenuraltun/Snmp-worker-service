@@ -8,22 +8,14 @@ namespace SNMP.ENTITY.Events.Snmp
 {
     public class DevicePollingStartedEvent: BaseEvent
     {
-        public DevicePollingStartedEvent(int deviceId, string ipAddress, int port, int intervalSeconds)
+        public DevicePollingStartedEvent(int deviceId)
         {
             DeviceId = deviceId;
-            IpAddress = ipAddress;
-            Port = port;
-            IntervalSeconds = intervalSeconds;
-            
 
             AggregateId = deviceId;
         }
 
         public int DeviceId { get; }
-        public string IpAddress { get; }
-        public int Port { get; }
-        public int IntervalSeconds { get; }
-
         
     }
 }

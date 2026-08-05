@@ -3,11 +3,8 @@ using Snmp.Business.Abstract;
 using Snmp.Business.DTOs.SnmpCredentials;
 using Snmp.Business.Results;
 using Snmp.DataAccess.Abstract;
-using Snmp.DataAccess.Concrete;
 using SNMP.ENTITY.Concrete;
-using System;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace Snmp.Business.Concrete
 {

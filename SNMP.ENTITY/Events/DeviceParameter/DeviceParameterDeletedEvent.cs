@@ -7,16 +7,14 @@ namespace SNMP.ENTITY.Events.DeviceParameter
 {
     public class DeviceParameterDeletedEvent : BaseEvent
     {
-        public DeviceParameterDeletedEvent(int deviceId, int deviceParameterId, int parameterId)
+        public DeviceParameterDeletedEvent(int deviceId)
         {
             DeviceId = deviceId;
-            DeviceParameterId = deviceParameterId;
-            ParameterId = parameterId;
+     
         }
 
         public int DeviceId { get; }
-        public int DeviceParameterId { get; }
-        public int ParameterId { get; }
+      
 
 
     }

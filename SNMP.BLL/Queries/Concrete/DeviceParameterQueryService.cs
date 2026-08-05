@@ -22,7 +22,7 @@ namespace Snmp.Business.Queries.Concrete
 
         public async Task<Result<List<DeviceParameterDTO>>> GetByDeviceIdAsync(int deviceId)
         {
-            var parameters =await _deviceParameterDAL.GetAllAsync(x => x.DeviceId == deviceId);
+            var parameters =await _deviceParameterDAL.GetAllAsync(x => x.DeviceId == deviceId, x=> x.Parameter);
 
             return Result<List<DeviceParameterDTO>>.Success(_mapper.Map<List<DeviceParameterDTO>>(parameters));
         }

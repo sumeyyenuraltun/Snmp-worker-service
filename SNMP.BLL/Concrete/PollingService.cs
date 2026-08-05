@@ -21,21 +21,16 @@ namespace Snmp.Business.Concrete
 
         public async Task<Result> StartAsync(StartPollingDTO startPollingDTO, CancellationToken cancellationToken)
         {
-            var device = await _deviceDAL.GetAsync(x => x.Id == startPollingDTO.DeviceId && x.IsActive);
+            var device = await _deviceDAL.GetAsync(
+                x => x.Id == startPollingDTO.DeviceId && x.IsActive);
 
-            if (device == null)
+            if (device is null)
                 return Result.Failure("Device not found.");
 
-            if (device.PollingEnabled)
-                return Result.Failure("Polling is already running.");
+            await _outboxService.AddMessageAsync(
+                new DevicePollingStartedEvent(startPollingDTO.DeviceId),
+                cancellationToken);
 
-            device.PollingEnabled = true;
-            device.PollingIntervalSeconds = startPollingDTO.IntervalSeconds;
-            device.UpdatedAt = DateTime.UtcNow;
-
-            await _deviceDAL.UpdateAsync(device);
-
-            await _outboxService.AddMessageAsync(new DevicePollingStartedEvent( device.Id,device.IpAddress,device.Port,startPollingDTO.IntervalSeconds),cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success();
@@ -43,18 +38,11 @@ namespace Snmp.Business.Concrete
 
         public async Task<Result> StopAsync(StopPollingDTO stopPollingDTO, CancellationToken cancellationToken)
         {
-            var device = await _deviceDAL.GetAsync(x => x.Id == stopPollingDTO.DeviceId && x.IsActive);
+            var device = await _deviceDAL.GetAsync(
+                x => x.Id == stopPollingDTO.DeviceId && x.IsActive);
 
-            if (device == null)
+            if (device is null)
                 return Result.Failure("Device not found.");
-
-            if (!device.PollingEnabled)
-                return Result.Failure("Polling is already stopped.");
-
-            device.PollingEnabled = false;
-            device.UpdatedAt = DateTime.UtcNow;
-
-            await _deviceDAL.UpdateAsync(device);
 
             await _outboxService.AddMessageAsync(
                 new DevicePollingStoppedEvent(stopPollingDTO.DeviceId),
