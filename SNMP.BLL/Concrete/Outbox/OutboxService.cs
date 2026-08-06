@@ -1,4 +1,4 @@
-﻿using Snmp.Business.Abstract;
+﻿using Snmp.Business.Abstract.Outbox;
 using Snmp.DataAccess.Abstract;
 using SNMP.ENTITY.Concrete;
 using System;
@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 
-namespace Snmp.Business.Concrete
+namespace Snmp.Business.Concrete.Outbox
 {
     public class OutboxService : IOutboxService
     {

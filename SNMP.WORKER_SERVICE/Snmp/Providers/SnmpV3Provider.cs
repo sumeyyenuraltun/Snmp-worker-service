@@ -21,32 +21,7 @@ namespace Snmp.EventWorker.Snmp.Providers
 
         public SnmpVersion Version => SnmpVersion.V3;
 
-        public async Task<string?> GetAsync(SnmpRequest request,CancellationToken cancellationToken = default)
-        {
-            var endpoint = new IPEndPoint(IPAddress.Parse(request.IpAddress),request.Port);
-
-            var variables = new List<Variable>
-            {
-                new Variable(new ObjectIdentifier(request.Oid))
-            };
-
-            var discovery = Messenger.GetNextDiscovery(SnmpType.GetRequestPdu);
-            var report = discovery.GetResponse(request.TimeoutMilliseconds, endpoint);
-
-            var getRequest = _requestFactory.CreateV3GetRequest(request.Credential, variables,report);
-      
-            var response = await Task.Run(() => getRequest.GetResponse(request.TimeoutMilliseconds, endpoint), cancellationToken);
-
-            var pdu = response.Pdu();
-
-            if (pdu?.Variables != null && pdu.Variables.Count > 0)
-            {
-                return pdu.Variables[0].Data.ToString();
-            }
-
-            return null;
-        }
-        public async Task<string?> GetNextAsync(SnmpRequest request,CancellationToken cancellationToken = default)
+        public async Task<string?> GetAsync(SnmpRequest request, CancellationToken cancellationToken = default)
         {
             var endpoint = new IPEndPoint(
                 IPAddress.Parse(request.IpAddress),
@@ -54,25 +29,61 @@ namespace Snmp.EventWorker.Snmp.Providers
 
             var variables = new List<Variable>
             {
-               new Variable(new ObjectIdentifier(request.Oid))
+                 new Variable(new ObjectIdentifier(request.Oid))
             };
 
-            var discovery = Messenger.GetNextDiscovery(SnmpType.GetNextRequestPdu);
-
+            var discovery = Messenger.GetNextDiscovery(SnmpType.GetRequestPdu);
             var report = discovery.GetResponse(request.TimeoutMilliseconds, endpoint);
 
-            var getNextRequest = _requestFactory.CreateV3GetNextRequest(
-                request.Credential,
-                variables,
-                report);
+            var getRequest = _requestFactory.CreateV3GetRequest(request.Credential,variables,report);
 
-            var response = await Task.Run(
-                () => getNextRequest.GetResponse(request.TimeoutMilliseconds, endpoint),
-                cancellationToken);
+            var response = await Task.Run(() => getRequest.GetResponse(request.TimeoutMilliseconds, endpoint),cancellationToken);
 
-            return response.Pdu().Variables.Count > 0
-                ? response.Pdu().Variables[0].Data.ToString()
-                : null;
+            if (response is ReportMessage reportMessage)
+            {
+                var reportVariable = reportMessage.Pdu().Variables.FirstOrDefault();
+
+                throw new InvalidOperationException($"SNMPv3 Report received. OID: {reportVariable?.Id}, Value: {reportVariable?.Data}");
+            }
+
+            var pdu = response.Pdu();
+
+            if (pdu == null || pdu.Variables.Count == 0)
+                return null;
+
+            return pdu.Variables[0].Data.ToString();
+        }
+        public async Task<string?> GetNextAsync(SnmpRequest request, CancellationToken cancellationToken = default)
+        {
+            var endpoint = new IPEndPoint(
+                IPAddress.Parse(request.IpAddress),
+                request.Port);
+
+            var variables = new List<Variable>
+    {
+        new Variable(new ObjectIdentifier(request.Oid))
+    };
+
+            var discovery = Messenger.GetNextDiscovery(SnmpType.GetNextRequestPdu);
+            var report = discovery.GetResponse(request.TimeoutMilliseconds, endpoint);
+
+            var getNextRequest = _requestFactory.CreateV3GetNextRequest(request.Credential,variables,report);
+
+            var response = await Task.Run(() => getNextRequest.GetResponse(request.TimeoutMilliseconds, endpoint),cancellationToken);
+
+            if (response is ReportMessage reportMessage)
+            {
+                var reportVariable = reportMessage.Pdu().Variables.FirstOrDefault();
+
+                throw new InvalidOperationException($"SNMPv3 Report received. OID: {reportVariable?.Id}, Value: {reportVariable?.Data}");
+            }
+
+            var pdu = response.Pdu();
+
+            if (pdu == null || pdu.Variables.Count == 0)
+                return null;
+
+            return pdu.Variables[0].Data.ToString();
         }
         public async Task<IList<Variable>> WalkAsync(SnmpRequest request,CancellationToken cancellationToken = default)
         {

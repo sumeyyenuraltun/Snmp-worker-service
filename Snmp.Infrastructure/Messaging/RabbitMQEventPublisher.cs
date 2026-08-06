@@ -4,7 +4,9 @@ using RabbitMQ.Client;
 using Snmp.Entity.Abstract;
 using Snmp.Infrastructure.Configuration;
 using SNMP.ENTITY.Events.Device;
+using SNMP.ENTITY.Events.DeviceParameter;
 using SNMP.ENTITY.Events.Snmp;
+using SNMP.ENTITY.Events.SnmpCredential;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -196,6 +198,12 @@ namespace Snmp.Infrastructure.Messaging
                 SnmpWalkRequestedEvent => "snmp.snmp.walk.requested",
                 SnmpGetNextRequestedEvent => "snmp.snmp.getnext.requested",
                 SnmpSetRequestedEvent => "snmp.snmp.set.requested",
+                SnmpCredentialCreatedEvent => "snmp.snmp.credential.event",
+                SnmpCredentialDeletedEvent => "snmp.snmp.credential.deleted",
+                SnmpCredentialUpdatedEvent => "snmp.snmp.credential.updated",
+                DeviceParameterCreatedEvent => "snmp.deviceparameter.created",
+                DeviceParameterDeletedEvent => "snmp.deviceparameter.deleted",
+                DeviceParameterUpdatedEvent => "snmp.deviceparameter.updated",
                 _ => throw new InvalidOperationException(
                     $"Unknown event type: {@event.GetType().Name}")
             };

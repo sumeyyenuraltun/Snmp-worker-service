@@ -1,11 +1,12 @@
-﻿using Snmp.Business.Abstract;
+﻿using Snmp.Business.Abstract.Outbox;
+using Snmp.Business.Abstract.Snmp;
 using Snmp.Business.DTOs.Snmp;
 using Snmp.Business.Results;
 using Snmp.DataAccess.Abstract;
 using SNMP.DAL.Abstract;
 using SNMP.ENTITY.Events.Snmp;
 
-namespace Snmp.Business.Concrete
+namespace Snmp.Business.Concrete.SnmpService
 {
     public class SnmpRequestedService : ISnmpRequestedService
     {

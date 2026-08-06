@@ -2,8 +2,6 @@
 
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using Snmp.Business.Abstract;
-using Snmp.Business.Concrete;
 using Snmp.Business.Mapping;
 using Snmp.Business.Queries.Abstract;
 using Snmp.Business.Queries.Concrete;
@@ -12,9 +10,13 @@ using Snmp.DataAccess.Concrete;
 using Snmp.EventWorker.BackgroundServices;
 using Snmp.EventWorker.Cache;
 using Snmp.EventWorker.EventHandlers.Abstract.Device;
+using Snmp.EventWorker.EventHandlers.Abstract.DeviceParameter;
 using Snmp.EventWorker.EventHandlers.Abstract.Snmp;
+using Snmp.EventWorker.EventHandlers.Abstract.SnmpCredential;
 using Snmp.EventWorker.EventHandlers.Concrete.Device;
+using Snmp.EventWorker.EventHandlers.Concrete.DeviceParameter;
 using Snmp.EventWorker.EventHandlers.Concrete.Snmp;
+using Snmp.EventWorker.EventHandlers.Concrete.SnmpCredential;
 using Snmp.EventWorker.Redis.Repositories;
 using Snmp.EventWorker.Redis.Services;
 using Snmp.EventWorker.Snmp.Helpers;
@@ -28,10 +30,10 @@ using Snmp.EventWorker.Snmp.Providers;
 using Snmp.EventWorker.Snmp.Services;
 using Snmp.EventWorker.Strategies;
 using Snmp.EventWorker.Strategies.Device;
+using Snmp.EventWorker.Strategies.DeviceParameter;
 using Snmp.EventWorker.Strategies.Snmp;
+using Snmp.EventWorker.Strategies.SnmpCredential;
 using Snmp.Infrastructure.Configuration;
-using SNMP.BLL.Abstract;
-using SNMP.BLL.Concrete;
 using SNMP.DAL.Abstract;
 using SNMP.DAL.Concrete;
 using SNMP.DAL.Context;
@@ -70,6 +72,13 @@ builder.Services.AddScoped<IEventStrategy, SnmpGetRequestedStrategy>();
 builder.Services.AddScoped<IEventStrategy, SnmpWalkRequestedStrategy>();
 builder.Services.AddScoped<IEventStrategy, SnmpGetNextRequestedStrategy>();
 builder.Services.AddScoped<IEventStrategy, SnmpSetRequestedStrategy>();
+builder.Services.AddScoped<IEventStrategy, SnmpCredentialCreatedStrategy>();
+builder.Services.AddScoped<IEventStrategy, SnmpCredentialUpdatedStrategy>();
+builder.Services.AddScoped<IEventStrategy, SnmpCredentialDeletedStrategy>();
+builder.Services.AddScoped<IEventStrategy, DeviceParameterCreatedStrategy>();
+builder.Services.AddScoped<IEventStrategy, DeviceParameterDeletedStrategy>();
+builder.Services.AddScoped<IEventStrategy, DeviceParameterUpdatedStrategy>();
+
 
 builder.Services.AddSingleton<IPollingManager, PollingManager>();
 
@@ -109,6 +118,14 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IDeviceDAL, DeviceDAL>();
 builder.Services.AddScoped<ISnmpCredentialDAL, SnmpCredentialDAL>();
 builder.Services.AddScoped<IDeviceParameterDAL, DeviceParameterDAL>();
+
+builder.Services.AddScoped<ISnmpCredentialCreatedEventHandler, SnmpCredentialCreatedEventHandler>();
+builder.Services.AddScoped<ISnmpCredentialUpdatedEventHandler, SnmpCredentialUpdatedEventHandler>();
+builder.Services.AddScoped<ISnmpCredentialDeletedEventHandler, SnmpCredentialDeletedEventHandler>();
+
+builder.Services.AddScoped<IDeviceParameterCreatedEventHandler, DeviceParameterCreatedEventHandler>();
+builder.Services.AddScoped<IDeviceParameterUpdatedEventHandler, DeviceParameterUpdatedEventHandler>();
+builder.Services.AddScoped<IDeviceParameterDeletedEventHandler, DeviceParameterDeletedEventHandler>();
 
 builder.Services.AddSingleton<IDeviceConfigurationCache, DeviceConfigurationCache>();
 var host = builder.Build();

@@ -1,15 +1,14 @@
 ﻿using AutoMapper;
-using Snmp.Business.Abstract;
+using Snmp.Business.Abstract.Outbox;
 using Snmp.Business.DTOs.Devices;
 using Snmp.Business.Results;
 using Snmp.DataAccess.Abstract;
-using SNMP.BLL.Abstract;
 using SNMP.DAL.Abstract;
-using SNMP.ENTITY.Concrete;
 using SNMP.ENTITY.Events.Device;
+using SNMP.ENTITY.Concrete;
+using Snmp.Business.Abstract.DeviceService;
 
-
-namespace SNMP.BLL.Concrete
+namespace Snmp.Business.Concrete.DeviceService
 {
     public class DeviceService : IDeviceService
     {

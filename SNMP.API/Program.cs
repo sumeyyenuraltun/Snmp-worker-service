@@ -1,11 +1,16 @@
-using AutoMapper;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Sinks.Elasticsearch;
-using Snmp.Business.Abstract;
-using Snmp.Business.Concrete;
+using Snmp.Business.Abstract.DeviceService;
+using Snmp.Business.Abstract.Outbox;
+using Snmp.Business.Abstract.Security;
+using Snmp.Business.Abstract.Snmp;
+using Snmp.Business.Concrete.DeviceService;
+using Snmp.Business.Concrete.Outbox;
+using Snmp.Business.Concrete.Security;
+using Snmp.Business.Concrete.SnmpService;
 using Snmp.Business.Mapping;
 using Snmp.Business.Queries.Abstract;
 using Snmp.Business.Queries.Concrete;
@@ -17,12 +22,10 @@ using Snmp.Infrastructure.Configuration;
 using Snmp.Infrastructure.Messaging;
 using Snmp.Infrastructure.Outbox;
 using Snmp.WebAPI.Middlewares;
-using SNMP.BLL.Abstract;
-using SNMP.BLL.Concrete;
 using SNMP.DAL.Abstract;
 using SNMP.DAL.Concrete;
 using SNMP.DAL.Context;
-using StackExchange.Redis;
+
 
 var builder = WebApplication.CreateBuilder(args);
 Log.Logger = new LoggerConfiguration()
@@ -91,6 +94,8 @@ builder.Services.AddHostedService<OutboxBackgroundService>();
 builder.Services.AddScoped<IDeviceQueryService, DeviceQueryService>();
 builder.Services.AddScoped<ISnmpCredentialQueryService, SnmpCredentialQueryService>();
 builder.Services.AddScoped<IDeviceParameterQueryService, DeviceParameterQueryService>();
+
+builder.Services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

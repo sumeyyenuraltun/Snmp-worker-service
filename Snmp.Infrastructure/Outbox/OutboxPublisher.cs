@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Snmp.Business.Abstract;
+using Snmp.Business.Abstract.Outbox;
 using Snmp.DataAccess.Abstract;
 using Snmp.Entity.Abstract;
 using System;

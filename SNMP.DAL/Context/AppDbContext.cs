@@ -24,5 +24,6 @@ namespace SNMP.DAL.Context
         public DbSet<Parameter> Parameters { get; set; }
         public DbSet<DeviceParameter> DeviceParameters { get; set; }
         public DbSet<OutboxMessage> OutboxMessages { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }

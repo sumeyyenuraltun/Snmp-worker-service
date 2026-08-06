@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Snmp.Business.Abstract;
+﻿using Microsoft.AspNetCore.Mvc;
+using Snmp.Business.Abstract.DeviceService;
 using Snmp.Business.DTOs.DeviceParameter;
-using Snmp.Business.Results;
+
 
 namespace Snmp.WebAPI.Controllers
 {

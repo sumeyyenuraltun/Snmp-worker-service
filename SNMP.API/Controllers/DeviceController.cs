@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Snmp.Business.Abstract.DeviceService;
 using Snmp.Business.DTOs.Devices;
-using SNMP.BLL.Abstract;
-using SNMP.ENTITY.Concrete;
+
 
 namespace SNMP.API.Controllers
 {

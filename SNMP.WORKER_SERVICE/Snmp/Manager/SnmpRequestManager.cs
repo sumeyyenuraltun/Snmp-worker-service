@@ -1,19 +1,11 @@
-﻿using AutoMapper;
-using Snmp.Business.Abstract;
-using Snmp.Business.DTOs.SnmpCredentials;
+﻿using Snmp.Business.DTOs.SnmpCredentials;
 using Snmp.Business.DTOs.SnmpValue;
 using Snmp.Business.Queries.Abstract;
-using Snmp.DataAccess.Abstract;
-using Snmp.Entity.Concrete;
 using Snmp.EventWorker.Redis.Services;
 using Snmp.EventWorker.Snmp.Models;
 using Snmp.EventWorker.Snmp.Services;
-using SNMP.BLL.Abstract;
-using SNMP.DAL.Abstract;
 using SNMP.ENTITY.Events.Snmp;
-using System;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace Snmp.EventWorker.Snmp.Manager
 {

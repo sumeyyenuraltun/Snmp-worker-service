@@ -1,24 +1,28 @@
 ﻿using AutoMapper;
-using Snmp.Business.Abstract;
+using Snmp.Business.Abstract.DeviceService;
+using Snmp.Business.Abstract.Outbox;
 using Snmp.Business.DTOs.SnmpCredentials;
 using Snmp.Business.Results;
 using Snmp.DataAccess.Abstract;
 using SNMP.ENTITY.Concrete;
+using SNMP.ENTITY.Events.SnmpCredential;
 
 
-namespace Snmp.Business.Concrete
+namespace Snmp.Business.Concrete.DeviceService
 {
     public class SnmpCredentialService : ISnmpCredentialService
     {
         private readonly ISnmpCredentialDAL _snmpCredentialDAL;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IOutboxService _outboxService;
 
-        public SnmpCredentialService(ISnmpCredentialDAL snmpCredentialDAL, IMapper mapper, IUnitOfWork unitOfWork)
+        public SnmpCredentialService(ISnmpCredentialDAL snmpCredentialDAL, IMapper mapper, IUnitOfWork unitOfWork, IOutboxService outboxService )
         {
             _snmpCredentialDAL = snmpCredentialDAL;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _outboxService = outboxService;
         }
 
         public async Task<Result> AddAsync(AddSnmpCredentialDTO dto, CancellationToken cancellationToken)
@@ -33,6 +37,7 @@ namespace Snmp.Business.Concrete
             var entity = _mapper.Map<SnmpCredential>(dto);
 
             await _snmpCredentialDAL.AddAsync(entity, cancellationToken);
+            await _outboxService.AddMessageAsync(new SnmpCredentialCreatedEvent(entity.DeviceId),cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -54,6 +59,8 @@ namespace Snmp.Business.Concrete
 
             await _snmpCredentialDAL.UpdateAsync(entity);
 
+            await _outboxService.AddMessageAsync(new SnmpCredentialUpdatedEvent(entity.DeviceId),cancellationToken);
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success();
@@ -70,6 +77,7 @@ namespace Snmp.Business.Concrete
             entity.UpdatedAt = DateTime.UtcNow;
 
             await _snmpCredentialDAL.UpdateAsync(entity);
+            await _outboxService.AddMessageAsync(new SnmpCredentialDeletedEvent( entity.DeviceId ),cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

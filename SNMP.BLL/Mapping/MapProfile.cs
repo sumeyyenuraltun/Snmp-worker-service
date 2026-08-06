@@ -3,6 +3,7 @@ using Snmp.Business.DTOs.DeviceParameter;
 using Snmp.Business.DTOs.Devices;
 using Snmp.Business.DTOs.Parameter;
 using Snmp.Business.DTOs.SnmpCredentials;
+using Snmp.Business.DTOs.User;
 using Snmp.Entity.Concrete;
 using SNMP.ENTITY.Concrete;
 using System;
@@ -35,6 +36,10 @@ namespace Snmp.Business.Mapping
             CreateMap<SnmpCredential, SnmpCredentialDTO>().ReverseMap();
             CreateMap<SnmpCredential, AddSnmpCredentialDTO>().ReverseMap();
             CreateMap<SnmpCredential, UpdateSnmpCredentialDTO>().ReverseMap();
+
+            CreateMap<User, UserDTO>().ReverseMap();
+            CreateMap<User, AddUserDTO>().ReverseMap();
+            CreateMap<User, UpdateUserDTO>().ReverseMap();
 
         }
     }

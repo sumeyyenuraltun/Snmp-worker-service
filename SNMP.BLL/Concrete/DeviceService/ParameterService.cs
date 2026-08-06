@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
-using Snmp.Business.Abstract;
+using Snmp.Business.Abstract.DeviceService;
 using Snmp.Business.DTOs.Parameter;
 using Snmp.Business.Results;
 using Snmp.DataAccess.Abstract;
 using Snmp.Entity.Concrete;
 
-namespace Snmp.Business.Concrete
+namespace Snmp.Business.Concrete.DeviceService
 {
     public class ParameterService : IParameterService
     {

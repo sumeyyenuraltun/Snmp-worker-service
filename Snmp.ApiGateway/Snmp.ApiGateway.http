@@ -1,0 +1,6 @@
+@Snmp.ApiGateway_HostAddress = http://localhost:5187
+
+GET {{Snmp.ApiGateway_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

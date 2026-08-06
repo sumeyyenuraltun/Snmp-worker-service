@@ -1,7 +1,4 @@
 ﻿using Snmp.Entity.Concrete;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SNMP.ENTITY.Concrete
 {

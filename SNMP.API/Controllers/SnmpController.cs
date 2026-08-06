@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Snmp.Business.Abstract;
+using Snmp.Business.Abstract.Snmp;
 using Snmp.Business.DTOs.Snmp;
 
 namespace Snmp.WebAPI.Controllers

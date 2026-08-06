@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SNMP.BLL.Abstract
+namespace Snmp.Business.Abstract.DeviceService
 {
     public interface IDeviceService 
     {
