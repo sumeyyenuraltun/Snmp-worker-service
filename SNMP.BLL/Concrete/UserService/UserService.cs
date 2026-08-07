@@ -113,5 +113,20 @@ namespace Snmp.Business.Concrete.UserService
 
             return Result<UserDTO>.Success(dto);
         }
+
+        public async Task<Result<UserAuthDTO>> GetByUsernameAsync(string username)
+        {
+            var entity = await _userDAL.GetAsync(x =>
+                x.Username == username &&
+                x.IsActive);
+
+            if(entity == null)
+                return Result<UserAuthDTO>.Failure("User not found.");
+
+            var dto = _mapper.Map<UserAuthDTO>(entity);
+
+            return Result<UserAuthDTO>.Success(dto);
+
+        }
     }
 }

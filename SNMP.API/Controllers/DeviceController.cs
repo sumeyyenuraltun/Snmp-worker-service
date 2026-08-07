@@ -3,7 +3,7 @@ using Snmp.Business.Abstract.DeviceService;
 using Snmp.Business.DTOs.Devices;
 
 
-namespace SNMP.API.Controllers
+namespace SNMP.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

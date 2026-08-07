@@ -18,5 +18,6 @@ namespace Snmp.Business.Abstract.UserService
         Task<Result<List<UserDTO>>> GetAllAsync();
 
         Task<Result<UserDTO>> GetByIdAsync(int id);
+        Task<Result<UserAuthDTO>> GetByUsernameAsync(string username);
     }
 }
