@@ -21,7 +21,7 @@ namespace Snmp.EventWorker.EventHandlers.Concrete.Snmp
         {
             ArgumentNullException.ThrowIfNull(snmpGetNextRequestedEvent);
 
-            _logger.LogInformation("SNMP GETNEXT requested. DeviceId:{DeviceId}, OID:{Oid}", snmpGetNextRequestedEvent.DeviceId, snmpGetNextRequestedEvent.Oid);
+            _logger.LogInformation("SNMP GETNEXT requested. DeviceId:{DeviceId}, OID:{Oid}", snmpGetNextRequestedEvent.DeviceId, snmpGetNextRequestedEvent.ParameterId);
 
             await _snmpRequestManager.ExecuteGetNextAsync(snmpGetNextRequestedEvent, cancellationToken);
 

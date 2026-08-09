@@ -7,7 +7,7 @@ namespace Snmp.Business.DTOs.Snmp
     public class SnmpWalkRequestDTO
     {
         public int DeviceId { get; set; }
-        public string RootOid { get; set; }
+        public int RootParameterId { get; set; }
         public int TimeoutMilliseconds { get; set; } = 5000;
     }
 }

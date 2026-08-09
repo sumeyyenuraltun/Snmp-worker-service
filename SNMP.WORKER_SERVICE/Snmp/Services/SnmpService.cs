@@ -1,100 +1,62 @@
 ﻿using Lextm.SharpSnmpLib;
-using Lextm.SharpSnmpLib.Messaging;
-using Lextm.SharpSnmpLib.Security;
-using Snmp.Business.DTOs.SnmpCredentials;
-using Snmp.EventWorker.Snmp.Helpers;
+using Snmp.EventWorker.Snmp.Clients;
 using Snmp.EventWorker.Snmp.Models;
-using Snmp.EventWorker.Snmp.Operations.Get;
-using Snmp.EventWorker.Snmp.Operations.GetNext;
-using Snmp.EventWorker.Snmp.Operations.Set;
-using Snmp.EventWorker.Snmp.Operations.Walk;
 using SNMP.ENTITY.Enums;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
+
 
 namespace Snmp.EventWorker.Snmp.Services
 {
     public class SnmpService : ISnmpService
     {
-        private readonly ISnmpGetOperation _getOperation;
-        private readonly ISnmpGetNextOperation _getNextOperation;
-        private readonly ISnmpWalkOperation _walkOperation;
-        private readonly ISnmpSetOperation _setOperation;
+        private readonly IReadOnlyDictionary<SnmpVersion, ISnmpClient> _clients;
         private readonly ILogger<SnmpService> _logger;
 
-        public SnmpService(ISnmpGetOperation getOperation, ISnmpGetNextOperation getNextOperation, ISnmpWalkOperation walkOperation, ISnmpSetOperation setOperation, ILogger<SnmpService> logger)
+        public SnmpService(IEnumerable<ISnmpClient> clients, ILogger<SnmpService> logger)
         {
-            _getOperation = getOperation;
-            _getNextOperation = getNextOperation;
-            _walkOperation = walkOperation;
-            _setOperation = setOperation;
+            _clients = clients.ToDictionary(c => c.Version);
             _logger = logger;
         }
 
-        public async Task<string?> GetAsync(SnmpRequest request,CancellationToken cancellationToken = default)
+        public Task<string?> GetAsync(SnmpRequest request, CancellationToken cancellationToken = default) =>
+            ExecuteAsync("GET", request, client => client.GetAsync(request, cancellationToken));
+
+        public Task<string?> GetNextAsync(SnmpRequest request, CancellationToken cancellationToken = default) =>
+            ExecuteAsync("GETNEXT", request, client => client.GetNextAsync(request, cancellationToken));
+
+        public Task SetAsync(SnmpRequest request, CancellationToken cancellationToken = default) =>
+            ExecuteAsync("SET", request, async client =>
+            {
+                await client.SetAsync(request, cancellationToken);
+                return string.Empty;
+            });
+
+        public Task<IList<Variable>> WalkAsync(SnmpRequest request, CancellationToken cancellationToken = default) =>
+            ExecuteAsync("WALK", request, client => client.WalkAsync(request, cancellationToken));
+
+        private async Task<T> ExecuteAsync<T>(string operation, SnmpRequest request, Func<ISnmpClient, Task<T>> action)
         {
+            var client = Resolve(request);
+
             try
             {
-                return await _getOperation.ExecuteAsync(
-                    request,
-                    cancellationToken);
+                return await action(client);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex,
-                    "SNMP GET failed. IP:{Ip}, OID:{Oid}",
-                    request.IpAddress,
-                    request.Oid);
+                _logger.LogError(ex, "SNMP {Operation} failed. IP:{Ip}, OID:{Oid}",
+                    operation, request.IpAddress, request.Oid);
 
                 throw;
             }
         }
 
-        public async Task<IList<Variable>> WalkAsync(SnmpRequest request,CancellationToken cancellationToken = default)
+        private ISnmpClient Resolve(SnmpRequest request)
         {
-            try
-            {
-                return await _walkOperation.ExecuteAsync(
-                    request,
-                    cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex,
-                    "SNMP WALK failed. IP:{Ip}, OID:{Oid}",
-                    request.IpAddress,
-                    request.Oid);
+            if (_clients.TryGetValue(request.Credential.Version, out var client))
+                return client;
 
-                throw;
-            }
-        }
-        public async Task<string?> GetNextAsync( SnmpRequest request,CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                return await _getNextOperation.ExecuteAsync(request,cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex,"SNMP GETNEXT failed. IP:{Ip}, OID:{Oid}", request.IpAddress, request.Oid);
-
-                throw;
-            }
-        }
-        public async Task SetAsync(SnmpRequest request, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                await _setOperation.ExecuteAsync( request, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(  ex, "SNMP SET failed. IP:{Ip}, OID:{Oid}", request.IpAddress, request.Oid);
-
-                throw;
-            }
+            throw new NotSupportedException(
+                $"SNMP version '{request.Credential.Version}' is not supported.");
         }
     }
 }

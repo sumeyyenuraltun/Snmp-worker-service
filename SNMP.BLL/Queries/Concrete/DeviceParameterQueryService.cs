@@ -26,5 +26,17 @@ namespace Snmp.Business.Queries.Concrete
 
             return Result<List<DeviceParameterDTO>>.Success(_mapper.Map<List<DeviceParameterDTO>>(parameters));
         }
+        public async Task<Result<DeviceParameterDTO>> GetByDeviceIdAndParameterIdAsync(int deviceId,int parameterId)
+        {
+            var entity = await _deviceParameterDAL
+                .GetByDeviceIdAndParameterIdAsync(deviceId, parameterId);
+
+            if (entity == null)
+                return Result<DeviceParameterDTO>.Failure("Device parameter not found.");
+
+            var dto = _mapper.Map<DeviceParameterDTO>(entity);
+
+            return Result<DeviceParameterDTO>.Success(dto);
+        }
     }
 }

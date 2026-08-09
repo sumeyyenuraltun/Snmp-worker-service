@@ -19,14 +19,9 @@ using Snmp.EventWorker.EventHandlers.Concrete.Device;
 using Snmp.EventWorker.EventHandlers.Concrete.DeviceParameter;
 using Snmp.EventWorker.EventHandlers.Concrete.Snmp;
 using Snmp.EventWorker.EventHandlers.Concrete.SnmpCredential;
-using Snmp.EventWorker.Snmp.Helpers;
+using Snmp.EventWorker.Snmp.Clients;
 using Snmp.EventWorker.Snmp.Manager;
-using Snmp.EventWorker.Snmp.Operations.Get;
-using Snmp.EventWorker.Snmp.Operations.GetNext;
-using Snmp.EventWorker.Snmp.Operations.Set;
-using Snmp.EventWorker.Snmp.Operations.Walk;
 using Snmp.EventWorker.Snmp.Polling;
-using Snmp.EventWorker.Snmp.Providers;
 using Snmp.EventWorker.Snmp.Services;
 using Snmp.EventWorker.Strategies;
 using Snmp.EventWorker.Strategies.Device;
@@ -97,7 +92,6 @@ builder.Services.AddScoped<ISnmpCredentialQueryService, SnmpCredentialQueryServi
 builder.Services.AddScoped<IDeviceParameterQueryService, DeviceParameterQueryService>();
 builder.Services.AddScoped<IDeviceQueryService, DeviceQueryService>();
 
-builder.Services.AddSingleton<ISnmpProviderFactory, SnmpProviderFactory>();
 builder.Services.AddScoped<ISnmpService, SnmpService>();
 builder.Services.AddSingleton(new JsonSerializerOptions
 {
@@ -107,17 +101,6 @@ builder.Services.AddSingleton(new JsonSerializerOptions
 
 builder.Services.AddScoped<IRedisRepository, RedisRepository>();
 builder.Services.AddScoped<IRedisService, RedisService>();
-
-
-builder.Services.AddSingleton<ISnmpRequestFactory, SnmpRequestFactory>();
-
-builder.Services.AddScoped<ISnmpProvider, SnmpV2Provider>();
-builder.Services.AddScoped<ISnmpProvider, SnmpV3Provider>();
-
-builder.Services.AddScoped<ISnmpGetOperation, SnmpGetOperation>();
-builder.Services.AddScoped<ISnmpGetNextOperation, SnmpGetNextOperation>();
-builder.Services.AddScoped<ISnmpWalkOperation, SnmpWalkOperation>();
-builder.Services.AddScoped<ISnmpSetOperation, SnmpSetOperation>();
 
 builder.Services.AddScoped<ISnmpRequestManager, SnmpRequestManager>();
 
@@ -137,6 +120,12 @@ builder.Services.AddScoped<ISnmpCredentialDeletedEventHandler, SnmpCredentialDel
 builder.Services.AddScoped<IDeviceParameterCreatedEventHandler, DeviceParameterCreatedEventHandler>();
 builder.Services.AddScoped<IDeviceParameterUpdatedEventHandler, DeviceParameterUpdatedEventHandler>();
 builder.Services.AddScoped<IDeviceParameterDeletedEventHandler, DeviceParameterDeletedEventHandler>();
+
+
+builder.Services.AddSingleton<ISnmpV3SecurityFactory, SnmpV3SecurityFactory>();
+builder.Services.AddSingleton<ISnmpClient, SnmpV2Client>();
+builder.Services.AddSingleton<ISnmpClient, SnmpV3Client>();
+builder.Services.AddScoped<ISnmpService, SnmpService>();
 
 builder.Services.AddSingleton<IDeviceConfigurationCache, DeviceConfigurationCache>();
 var host = builder.Build();

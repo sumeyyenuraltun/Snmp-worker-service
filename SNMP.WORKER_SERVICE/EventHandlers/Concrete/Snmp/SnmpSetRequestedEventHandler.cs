@@ -22,7 +22,7 @@ namespace Snmp.EventWorker.EventHandlers.Concrete.Snmp
         {
             ArgumentNullException.ThrowIfNull(snmpSetRequestedEvent);
 
-            _logger.LogInformation("SNMP SET requested. DeviceId:{DeviceId}, OID:{Oid}", snmpSetRequestedEvent.DeviceId, snmpSetRequestedEvent.Oid);
+            _logger.LogInformation("SNMP SET requested. DeviceId:{DeviceId}, OID:{Oid}", snmpSetRequestedEvent.DeviceId, snmpSetRequestedEvent.ParameterId);
 
             await _snmpRequestManager.ExecuteSetAsync(snmpSetRequestedEvent, cancellationToken);
 

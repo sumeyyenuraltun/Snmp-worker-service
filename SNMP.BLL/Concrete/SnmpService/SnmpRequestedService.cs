@@ -28,7 +28,7 @@ namespace Snmp.Business.Concrete.SnmpService
             if (device == null)
                 return Result.Failure("Device couldn't find.");
 
-            await _outboxService.AddMessageAsync(new SnmpGetRequestedEvent(snmpRequestDTO.DeviceId,snmpRequestDTO.Oid, snmpRequestDTO.TimeoutMilliseconds),cancellationToken);
+            await _outboxService.AddMessageAsync(new SnmpGetRequestedEvent(snmpRequestDTO.DeviceId,snmpRequestDTO.ParameterId, snmpRequestDTO.TimeoutMilliseconds),cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -42,7 +42,7 @@ namespace Snmp.Business.Concrete.SnmpService
             if (device == null)
                 return Result.Failure("Device couldn't find.");
 
-            await _outboxService.AddMessageAsync(new SnmpWalkRequestedEvent( snmpWalkRequestDTO.DeviceId,snmpWalkRequestDTO.RootOid,snmpWalkRequestDTO.TimeoutMilliseconds),cancellationToken);
+            await _outboxService.AddMessageAsync(new SnmpWalkRequestedEvent( snmpWalkRequestDTO.DeviceId,snmpWalkRequestDTO.RootParameterId,snmpWalkRequestDTO.TimeoutMilliseconds),cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -57,7 +57,7 @@ namespace Snmp.Business.Concrete.SnmpService
                 return Result.Failure("Device couldn't find.");
             
 
-            await _outboxService.AddMessageAsync(new SnmpSetRequestedEvent(snmpSetRequestDTO.DeviceId, snmpSetRequestDTO.Oid, snmpSetRequestDTO.Value, snmpSetRequestDTO.TimeoutMilliseconds), cancellationToken);
+            await _outboxService.AddMessageAsync(new SnmpSetRequestedEvent(snmpSetRequestDTO.DeviceId, snmpSetRequestDTO.ParameterId, snmpSetRequestDTO.Value, snmpSetRequestDTO.TimeoutMilliseconds), cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -73,7 +73,7 @@ namespace Snmp.Business.Concrete.SnmpService
                 return Result.Failure("Device couldn't find");
             }
 
-            await _outboxService.AddMessageAsync(new SnmpGetNextRequestedEvent(snmpGetNextRequestDTO.DeviceId, snmpGetNextRequestDTO.Oid, snmpGetNextRequestDTO.TimeoutMilliseconds), cancellationToken);
+            await _outboxService.AddMessageAsync(new SnmpGetNextRequestedEvent(snmpGetNextRequestDTO.DeviceId, snmpGetNextRequestDTO.ParameterId, snmpGetNextRequestDTO.TimeoutMilliseconds), cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result.Success();

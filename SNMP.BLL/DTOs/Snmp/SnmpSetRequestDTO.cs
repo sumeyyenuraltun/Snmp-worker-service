@@ -7,9 +7,7 @@ namespace Snmp.Business.DTOs.Snmp
     public class SnmpSetRequestDTO
     {
         public int DeviceId { get; set; }
-
-        public string Oid { get; set; } = string.Empty;
-
+        public int ParameterId { get; set; }
         public string Value { get; set; } = string.Empty;
         public int TimeoutMilliseconds { get; set; } = 5000;
     }

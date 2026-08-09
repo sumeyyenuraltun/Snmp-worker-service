@@ -24,5 +24,14 @@ namespace Snmp.DataAccess.Concrete
                 .Where(x => x.DeviceId == deviceId)
                 .ToListAsync();
         }
+
+        public async Task<DeviceParameter?> GetByDeviceIdAndParameterIdAsync(int deviceId,int parameterId)
+        {
+            return await _context.DeviceParameters
+                .Include(x => x.Parameter)
+                .FirstOrDefaultAsync(x =>
+                    x.DeviceId == deviceId &&
+                    x.ParameterId == parameterId);
+        }
     }
 }

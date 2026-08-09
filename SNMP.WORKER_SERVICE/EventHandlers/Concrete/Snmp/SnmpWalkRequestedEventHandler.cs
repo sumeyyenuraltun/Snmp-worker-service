@@ -21,7 +21,7 @@ namespace Snmp.EventWorker.EventHandlers.Concrete.Snmp
         {
             ArgumentNullException.ThrowIfNull(snmpWalkRequestedEvent);
 
-            _logger.LogInformation("SNMP WALK requested. DeviceId:{DeviceId}, RootOid:{Oid}",snmpWalkRequestedEvent.DeviceId,  snmpWalkRequestedEvent.RootOid);
+            _logger.LogInformation("SNMP WALK requested. DeviceId:{DeviceId}, RootOid:{Oid}",snmpWalkRequestedEvent.DeviceId,  snmpWalkRequestedEvent.RootParameterId);
 
             await _snmpRequestManager.ExecuteWalkAsync(snmpWalkRequestedEvent,cancellationToken);
 

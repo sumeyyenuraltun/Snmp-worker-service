@@ -9,5 +9,6 @@ namespace Snmp.DataAccess.Abstract
     public interface IDeviceParameterDAL : IBaseRepository<DeviceParameter>
     {
         Task<List<DeviceParameter>> GetByDeviceIdAsync(int deviceId);
+        Task<DeviceParameter?> GetByDeviceIdAndParameterIdAsync(int deviceId,int parameterId);
     }
 }

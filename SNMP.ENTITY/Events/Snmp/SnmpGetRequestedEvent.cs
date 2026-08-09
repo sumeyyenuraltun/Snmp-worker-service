@@ -7,16 +7,15 @@ namespace SNMP.ENTITY.Events.Snmp
 {
     public class SnmpGetRequestedEvent : BaseEvent
     {
-        public SnmpGetRequestedEvent(int deviceId, string oid, int timeoutMilliseconds)
+        public SnmpGetRequestedEvent(int deviceId, int parameterId, int timeoutMilliseconds)
         {
             DeviceId = deviceId;
-            Oid = oid;
+            ParameterId = parameterId;
             TimeoutMilliseconds = timeoutMilliseconds;
         }
 
         public int DeviceId { get;  }
-
-        public string Oid { get; }
+        public int ParameterId { get; set; }
         public int TimeoutMilliseconds { get; set; }
     }
 }
