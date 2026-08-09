@@ -14,6 +14,7 @@
     <PackageReference Include="RabbitMQ.Client" Version="7.2.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="StackExchange.Redis" Version="3.0.17" />
   </ItemGroup>
@@ -21,6 +22,5 @@
   <ItemGroup>
     <ProjectReference Include="..\SNMP.BLL\Snmp.Business.csproj" />
     <ProjectReference Include="..\SNMP.ENTITY\Snmp.Entity.csproj" />
-    <ProjectReference Include="..\Snmp.Infrastructure\Snmp.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

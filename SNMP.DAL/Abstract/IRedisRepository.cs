@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Snmp.EventWorker.Redis.Repositories
+namespace Snmp.DataAccess.Abstract
 {
     public interface IRedisRepository
     {

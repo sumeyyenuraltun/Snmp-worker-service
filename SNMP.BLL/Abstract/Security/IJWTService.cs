@@ -8,6 +8,7 @@ namespace Snmp.Business.Abstract.Security
 {
     public interface IJWTService
     {
-        string CreateToken(UserAuthDTO userAuthDTO);  
+        string CreateToken(UserAuthDTO userAuthDTO);
+        string GenerateRefreshToken();
     }
 }

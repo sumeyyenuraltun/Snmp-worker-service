@@ -7,5 +7,7 @@ namespace Snmp.Business.Abstract.Auth
     {
         Task<Result> RegisterAsync(RegisterRequestDTO request, CancellationToken cancellationToken);
         Task<Result<AuthResponseDTO>> LoginAsync(LoginRequestDTO request, CancellationToken cancellationToken);
+        Task<Result<AuthResponseDTO>> RefreshTokenAsync(RefreshTokenRequestDTO request,CancellationToken cancellationToken);
+        Task<Result> LogoutAsync(string refreshToken,CancellationToken cancellationToken);
     }
 }

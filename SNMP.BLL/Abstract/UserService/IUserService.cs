@@ -1,4 +1,5 @@
-﻿using Snmp.Business.DTOs.Devices;
+﻿using Snmp.Business.DTOs.Auth;
+using Snmp.Business.DTOs.Devices;
 using Snmp.Business.DTOs.User;
 using Snmp.Business.Results;
 using System;
@@ -9,7 +10,7 @@ namespace Snmp.Business.Abstract.UserService
 {
     public interface IUserService
     {
-        Task<Result> AddAsync(AddUserDTO addUserDTO, CancellationToken cancellationToken);
+        Task<Result> AddAsync(RegisterRequestDTO registerRequestDTO, CancellationToken cancellationToken);
 
         Task<Result> UpdateAsync(UpdateUserDTO updateUserDTO, CancellationToken cancellationToken);
 
@@ -19,5 +20,8 @@ namespace Snmp.Business.Abstract.UserService
 
         Task<Result<UserDTO>> GetByIdAsync(int id);
         Task<Result<UserAuthDTO>> GetByUsernameAsync(string username);
+        Task<Result> UpdateRefreshTokenAsync(int userId,string refreshToken,DateTime expiryTime,CancellationToken cancellationToken);
+        Task<Result<UserAuthDTO>> GetByRefreshTokenAsync(string refreshToken);
+        Task<Result> ClearRefreshTokenAsync(int userId,CancellationToken cancellationToken);
     }
 }

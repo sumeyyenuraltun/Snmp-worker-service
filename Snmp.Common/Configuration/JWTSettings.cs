@@ -1,4 +1,4 @@
-﻿namespace Snmp.WebAPI.Configuration
+﻿namespace Snmp.Common.Configuration
 {
     public class JWTSettings
     {

@@ -3,14 +3,18 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using Serilog;
 using Serilog.Sinks.Elasticsearch;
+using Snmp.Business.Abstract;
 using Snmp.Business.Abstract.Auth;
 using Snmp.Business.Abstract.DeviceService;
 using Snmp.Business.Abstract.Outbox;
+using Snmp.Business.Abstract.Redis;
 using Snmp.Business.Abstract.Security;
 using Snmp.Business.Abstract.Snmp;
 using Snmp.Business.Abstract.UserService;
+using Snmp.Business.Concrete;
 using Snmp.Business.Concrete.Auth;
 using Snmp.Business.Concrete.DeviceService;
 using Snmp.Business.Concrete.Outbox;
@@ -21,37 +25,38 @@ using Snmp.Business.Mapping;
 using Snmp.Business.Queries.Abstract;
 using Snmp.Business.Queries.Concrete;
 using Snmp.Business.ValidationRules.DeviceValidator;
+using Snmp.Common.Configuration;
 using Snmp.DataAccess.Abstract;
 using Snmp.DataAccess.Concrete;
-using Snmp.Entity.Abstract;
-using Snmp.Infrastructure.Configuration;
-using Snmp.Infrastructure.Messaging;
-using Snmp.Infrastructure.Outbox;
-using Snmp.WebAPI.Configuration;
+using Snmp.DataAccess.Concrete.Redis;
 using Snmp.WebAPI.Middlewares;
 using SNMP.DAL.Abstract;
 using SNMP.DAL.Concrete;
 using SNMP.DAL.Context;
+using StackExchange.Redis;
 using System.Text;
-using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .WriteTo.Console()
-    .CreateLogger();
 
 builder.Host.UseSerilog((context, services, configuration) =>
 {
-    var settings = context.Configuration.GetSection("ElasticSearch").Get<ElasticSearchSettings>();
+    var settings = context.Configuration
+        .GetSection(ElasticSearchSettings.SectionName)
+        .Get<ElasticSearchSettings>()
+        ?? throw new InvalidOperationException("ElasticSearch configuration is missing.");
 
-    configuration.ReadFrom.Configuration(context.Configuration)
-                 .WriteTo.Console()
-                 .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(settings.Uri))
-                 {
-                     AutoRegisterTemplate = true,
-                     IndexFormat = settings.IndexFormat
-                 });
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .Enrich.FromLogContext()
+        .WriteTo.Console(
+            outputTemplate:
+            "[{Timestamp:HH:mm:ss} {Level:u3}] [CorrelationId:{CorrelationId}] {Message:lj}{NewLine}{Exception}")
+        .WriteTo.Elasticsearch(
+            new ElasticsearchSinkOptions(new Uri(settings.Uri))
+            {
+                AutoRegisterTemplate = true,
+                IndexFormat = settings.IndexFormat
+            });
 });
 
 
@@ -61,6 +66,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(option =>option.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSqlConnection")));
 
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -109,6 +115,8 @@ builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserDAL, UserDAL>();
 
+builder.Services.AddScoped<IRedisService, RedisService>();
+builder.Services.AddScoped<IRedisRepository, RedisRepository>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -140,7 +148,7 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
@@ -165,7 +173,16 @@ builder.Services.AddSwaggerGen(options =>
         [new Microsoft.OpenApi.OpenApiSecuritySchemeReference("Bearer", document)] = new List<string>()
     });
 });
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configuration = builder.Configuration.GetConnectionString("Redis");
+
+    return ConnectionMultiplexer.Connect(configuration);
+});
 var app = builder.Build();
+
+app.UseMiddleware<CorrelationIdMiddleware>();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
 

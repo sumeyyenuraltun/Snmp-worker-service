@@ -2,11 +2,9 @@
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Snmp.EventWorker.Strategies;
-using Snmp.Infrastructure.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
+using Serilog.Context;
+using Snmp.Common.Configuration;
 
 namespace Snmp.EventWorker.BackgroundServices
 {
@@ -98,9 +96,17 @@ namespace Snmp.EventWorker.BackgroundServices
                 var dispatcher = scope.ServiceProvider
                     .GetRequiredService<IEventDispatcher>();
 
-                await dispatcher.DispatchAsync(
-                    eventMessage,
-                    cancellationToken);
+                using (LogContext.PushProperty("CorrelationId", eventMessage.CorrelationId))
+                {
+                    _logger.LogInformation(
+                        "Processing event {EventType}. CorrelationId: {CorrelationId}",
+                        eventMessage.EventType,
+                        eventMessage.CorrelationId);
+
+                    await dispatcher.DispatchAsync(
+                        eventMessage,
+                        cancellationToken);
+                }
             }
             catch (Exception ex)
             {
@@ -132,7 +138,7 @@ namespace Snmp.EventWorker.BackgroundServices
                     var routingKey = ea.RoutingKey;
                     _logger.LogDebug("Received message with RoutingKey : {RoutingKey}, Body: {Body}", routingKey, message);
                     await ProcessEventAsync(message, routingKey, stoppingToken);
-                    _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
+                    await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
                 }
                 catch (Exception ex)
                 {

@@ -1,12 +1,9 @@
 ﻿
 using Snmp.Business.DTOs.SnmpValue;
-using Snmp.EventWorker.Redis.Repositories;
-using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Snmp.DataAccess.Abstract;
+using Snmp.EventWorker.Redis;
 
-namespace Snmp.EventWorker.Redis.Services
+namespace Snmp.Business.Abstract.Redis
 {
     public class RedisService : IRedisService
     {

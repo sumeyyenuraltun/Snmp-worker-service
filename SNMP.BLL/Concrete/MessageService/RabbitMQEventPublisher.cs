@@ -1,19 +1,18 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
+using Snmp.Business.Abstract;
+using Snmp.Common.Configuration;
 using Snmp.Entity.Abstract;
-using Snmp.Infrastructure.Configuration;
 using SNMP.ENTITY.Events.Device;
 using SNMP.ENTITY.Events.DeviceParameter;
 using SNMP.ENTITY.Events.Snmp;
 using SNMP.ENTITY.Events.SnmpCredential;
-using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
-namespace Snmp.Infrastructure.Messaging
+namespace Snmp.Business.Concrete
 {
     public class RabbitMQEventPublisher : IEventPublisher, IAsyncDisposable
     {
@@ -25,11 +24,12 @@ namespace Snmp.Infrastructure.Messaging
         private bool _exchangeDeclared;
         private bool _disposed;
         private readonly SemaphoreSlim _initializationSemaphore = new SemaphoreSlim(1, 1);
-
-        public RabbitMQEventPublisher(IOptions<RabbitMQSetting> settings, ILogger<RabbitMQEventPublisher> logger)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public RabbitMQEventPublisher(IOptions<RabbitMQSetting> settings, ILogger<RabbitMQEventPublisher> logger, IHttpContextAccessor httpContextAccessor)
         {
             _settings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _httpContextAccessor = httpContextAccessor;
 
             _connectionFactory = new ConnectionFactory
             {
@@ -88,7 +88,7 @@ namespace Snmp.Infrastructure.Messaging
             await Task.CompletedTask;
         }
 
-        public async Task PublishAsync(IEvent @events, CancellationToken cancellationToken)
+        public async Task PublishAsync(IEvent @events, string? correlationId, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(@events);
 
@@ -102,7 +102,9 @@ namespace Snmp.Infrastructure.Messaging
                     EventType = @events.EventType,
                     OccurredAt = @events.OccuredAt,
                     AggregateId = @events.AggregateId,
-                    Data = @events
+                    Data = @events,
+                    CorrelationId = correlationId
+
                 };
 
                 var json = JsonSerializer.Serialize(eventMessage, new JsonSerializerOptions
@@ -140,13 +142,13 @@ namespace Snmp.Infrastructure.Messaging
             }
         }
 
-        public async Task PublishAsync(IEnumerable<IEvent> events, CancellationToken cancellationToken)
+        public async Task PublishAsync(IEnumerable<IEvent> events, string? correlationId, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(@events);
 
             foreach(var @event in events)
             {
-                await PublishAsync(@event, cancellationToken);
+                await PublishAsync(@event, correlationId, cancellationToken);
             }
         }
 
@@ -181,6 +183,7 @@ namespace Snmp.Infrastructure.Messaging
         {
             public Guid EventId { get; set; } 
             public string EventType { get; set; } = string.Empty;
+            public string? CorrelationId { get; set; }
             public DateTime OccurredAt { get; set; }
             public int AggregateId { get; set; }
             public object Data { get; set; } = null!;

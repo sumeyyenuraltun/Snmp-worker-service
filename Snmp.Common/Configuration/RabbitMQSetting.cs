@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Snmp.Infrastructure.Configuration
+
+namespace Snmp.Common.Configuration
 {
     public class RabbitMQSetting
     {

@@ -27,7 +27,6 @@
     <ProjectReference Include="..\SNMP.BLL\Snmp.Business.csproj" />
     <ProjectReference Include="..\SNMP.DAL\Snmp.DataAccess.csproj" />
     <ProjectReference Include="..\SNMP.ENTITY\Snmp.Entity.csproj" />
-    <ProjectReference Include="..\Snmp.Infrastructure\Snmp.Infrastructure.csproj" />
     <ProjectReference Include="..\Snmp.SnmpSimulator\Snmp.SnmpSimulator.csproj" />
   </ItemGroup>
 

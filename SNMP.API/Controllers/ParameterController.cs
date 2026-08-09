@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Snmp.Business.Abstract.DeviceService;
 using Snmp.Business.DTOs.Parameter;
 
@@ -6,6 +7,7 @@ namespace Snmp.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ParameterController : ControllerBase
     {
         private readonly IParameterService _parameterService;

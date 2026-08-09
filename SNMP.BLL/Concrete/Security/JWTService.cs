@@ -2,10 +2,10 @@
 using Microsoft.IdentityModel.Tokens;
 using Snmp.Business.Abstract.Security;
 using Snmp.Business.DTOs.User;
-using Snmp.WebAPI.Configuration;
-using SNMP.ENTITY.Concrete;
+using Snmp.Common.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Snmp.Business.Concrete.Security
@@ -41,6 +41,16 @@ namespace Snmp.Business.Concrete.Security
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public string GenerateRefreshToken()
+        {
+            var randomBytes = new byte[64];
+
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomBytes);
+
+            return Convert.ToBase64String(randomBytes);
         }
     }
 }

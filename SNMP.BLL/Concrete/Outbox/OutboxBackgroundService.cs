@@ -1,11 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Snmp.Business.Abstract.Outbox;
 
-namespace Snmp.Infrastructure.Outbox
+namespace Snmp.Business.Concrete.Outbox
 {
     public class OutboxBackgroundService : BackgroundService
     {

@@ -37,5 +37,26 @@ namespace Snmp.WebAPI.Controllers
 
             return Ok(result.Value);
         }
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDTO request,CancellationToken cancellationToken)
+        {
+            var result = await _authService.RefreshTokenAsync(request, cancellationToken);
+
+            if (!result.IsSuccess)
+                return Unauthorized(result.Error);
+
+            return Ok(result.Value);
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] RefreshTokenRequestDTO request,CancellationToken cancellationToken)
+        {
+            var result = await _authService.LogoutAsync(request.RefreshToken, cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
+            return NoContent();
+        }
     }
 }

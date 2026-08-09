@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Snmp.Business.Abstract.UserService;
 using Snmp.Business.DTOs.User;
@@ -7,6 +8,7 @@ namespace Snmp.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -19,8 +21,9 @@ namespace Snmp.WebAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var result = await _userService.GetAllAsync();
-            return Ok(result.Value);
+             var result = await _userService.GetAllAsync();
+             return Ok(result.Value);
+            
         }
 
         [HttpGet("{id}")]

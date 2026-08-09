@@ -5,9 +5,9 @@
   <Project Path="SNMP.API/Snmp.WebAPI.csproj" Id="51070567-f824-41ad-a9a9-162e4ce6ebed" />
   <Project Path="Snmp.ApiGateway/Snmp.ApiGateway.csproj" Id="eea52185-66c9-497d-a9ea-2569b326212d" />
   <Project Path="SNMP.BLL/Snmp.Business.csproj" Id="b4eacad2-6c5a-4e41-b781-06da8abfb9c4" />
+  <Project Path="Snmp.Common/Snmp.Common.csproj" Id="48b48755-bfe4-4793-ac2f-31e283e10705" />
   <Project Path="SNMP.DAL/Snmp.DataAccess.csproj" Id="06b41142-4549-4caf-9d97-17b68f5440de" />
   <Project Path="SNMP.ENTITY/SNMP.ENTITY.csproj" />
-  <Project Path="Snmp.Infrastructure/Snmp.Infrastructure.csproj" Id="78090eef-2ec1-4ec0-b0c5-0b7513f80577" />
   <Project Path="Snmp.SnmpSimulator/Snmp.SnmpSimulator.csproj" Id="c15ecb49-4772-4ed8-b9a2-ec8c143b3c25" />
   <Project Path="SNMP.WORKER_SERVICE/Snmp.EventWorker.csproj" Id="b8c13b11-3d7a-48a8-99d9-23c1d9d1e3e9" />
 </Solution>

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Snmp.Business.Abstract.DeviceService;
 using Snmp.Business.DTOs.SnmpCredentials;
 
@@ -6,6 +7,7 @@ namespace Snmp.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SnmpCredentialController : ControllerBase
     {
         private readonly ISnmpCredentialService _snmpCredentialService;

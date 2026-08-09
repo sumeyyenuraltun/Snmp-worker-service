@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Snmp.Business.Abstract.Snmp;
 using Snmp.Business.DTOs.Snmp;
@@ -7,6 +8,7 @@ namespace Snmp.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SnmpController : ControllerBase
     {
         private readonly ISnmpRequestedService _snmpRequestedService;

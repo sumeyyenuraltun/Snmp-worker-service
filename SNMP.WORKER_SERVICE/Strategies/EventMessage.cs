@@ -11,5 +11,6 @@ namespace Snmp.EventWorker.Strategies
         public DateTime OccuredAt { get; set; }
         public int AggregateId { get; set; }
         public object Data { get; set; } = new();
+        public string? CorrelationId { get; set; }
     }
 }

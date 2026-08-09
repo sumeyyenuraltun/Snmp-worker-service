@@ -1,7 +1,7 @@
-﻿using Snmp.Business.DTOs.DeviceParameter;
+﻿using Snmp.Business.Abstract.Redis;
+using Snmp.Business.DTOs.DeviceParameter;
 using Snmp.Business.DTOs.SnmpValue;
 using Snmp.EventWorker.Cache;
-using Snmp.EventWorker.Redis.Services;
 using Snmp.EventWorker.Snmp.Models;
 using Snmp.EventWorker.Snmp.Services;
 using SNMP.ENTITY.Events.Snmp;

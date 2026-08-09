@@ -1,4 +1,5 @@
-﻿using Snmp.Business.Abstract.Outbox;
+﻿using Microsoft.AspNetCore.Http;
+using Snmp.Business.Abstract.Outbox;
 using Snmp.DataAccess.Abstract;
 using SNMP.ENTITY.Concrete;
 using System;
@@ -11,10 +12,12 @@ namespace Snmp.Business.Concrete.Outbox
     public class OutboxService : IOutboxService
     {
         private readonly IOutboxMessageDAL _outboxMessageDAL;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public OutboxService(IOutboxMessageDAL outboxMessageDAL)
+        public OutboxService(IOutboxMessageDAL outboxMessageDAL, IHttpContextAccessor httpContextAccessor)
         {
             _outboxMessageDAL = outboxMessageDAL;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task AddMessageAsync<T>(T @event, CancellationToken cancellationToken = default) where T : class
@@ -23,6 +26,7 @@ namespace Snmp.Business.Concrete.Outbox
             {
                 EventType = typeof(T).AssemblyQualifiedName!,
                 Payload = JsonSerializer.Serialize(@event),
+                CorrelationId = _httpContextAccessor.HttpContext?.Items["X-Correlation-ID"]?.ToString(),
                 OccurredOn = DateTime.UtcNow,
                 IsProcessed = false
             };

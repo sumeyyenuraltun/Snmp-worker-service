@@ -10,6 +10,7 @@ namespace SNMP.ENTITY.Concrete
 
         public string Payload { get; set; } = null!;
 
+        public string? CorrelationId { get; set; }
         public DateTime OccurredOn { get; set; }
 
         public DateTime? ProcessedOn { get; set; }

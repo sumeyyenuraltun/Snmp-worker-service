@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Snmp.Business.Abstract.DeviceService;
 using Snmp.Business.Abstract.Outbox;
+using Snmp.Business.Abstract.Redis;
 using Snmp.Business.DTOs.DeviceParameter;
+using Snmp.Business.DTOs.Snmp;
 using Snmp.Business.Results;
 using Snmp.DataAccess.Abstract;
 using Snmp.Entity.Concrete;
@@ -16,13 +18,14 @@ namespace Snmp.Business.Concrete.DeviceService
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IOutboxService _outboxService;
-
-        public DeviceParameterService(IDeviceParameterDAL deviceParameterDAL, IMapper mapper, IUnitOfWork unitOfWork, IOutboxService outboxService)
+        private readonly IRedisService _redisService;
+        public DeviceParameterService(IDeviceParameterDAL deviceParameterDAL, IMapper mapper, IUnitOfWork unitOfWork, IOutboxService outboxService, IRedisService redisService)
         {
             _deviceParameterDAL = deviceParameterDAL;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _outboxService = outboxService;
+            _redisService = redisService;
         }
 
         public async Task<Result<List<DeviceParameterDTO>>> GetByDeviceIdAsync(int deviceId)
@@ -92,7 +95,22 @@ namespace Snmp.Business.Concrete.DeviceService
 
             return Result<DeviceParameterDTO>.Success(dto);
         }
+        public async Task<Result<LatestSnmpValueDTO>> GetLatestValueAsync(int deviceId, int parameterId)
+        {
+            var value = await _redisService.GetLatestValueAsync(deviceId, parameterId);
 
-      
+            if (value is null)
+                return Result<LatestSnmpValueDTO>.Failure("Latest value not found.");
+
+            return Result<LatestSnmpValueDTO>.Success(new LatestSnmpValueDTO
+            {
+                DeviceId = value.DeviceId,
+                ParameterId = value.ParameterId,
+                Oid = value.Oid,
+                Value = value.Value,
+                Timestamp = value.Timestamp
+            });
+        }
+
     }
 }

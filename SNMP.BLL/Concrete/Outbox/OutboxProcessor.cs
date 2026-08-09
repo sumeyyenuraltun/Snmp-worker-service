@@ -1,13 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
+using Snmp.Business.Abstract;
+using Snmp.Business.Abstract.Outbox;
 using Snmp.DataAccess.Abstract;
 using Snmp.Entity.Abstract;
-using Snmp.Infrastructure.Messaging;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
 
-namespace Snmp.Infrastructure.Outbox
+namespace Snmp.Business.Concrete.Outbox
 {
     public class OutboxProcessor : IOutboxProcessor
     {
@@ -47,7 +45,7 @@ namespace Snmp.Infrastructure.Outbox
                         continue;
                     }
 
-                    await _eventPublisher.PublishAsync(domaintEvent, cancellationToken);
+                    await _eventPublisher.PublishAsync(domaintEvent,message.CorrelationId,cancellationToken);
 
                     message.IsProcessed = true;
                     message.ProcessedOn = DateTime.UtcNow;

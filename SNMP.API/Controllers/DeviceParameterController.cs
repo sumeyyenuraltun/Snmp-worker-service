@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Snmp.Business.Abstract.DeviceService;
 using Snmp.Business.DTOs.DeviceParameter;
 
@@ -7,6 +8,7 @@ namespace Snmp.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class DeviceParameterController : ControllerBase
     {
         private readonly IDeviceParameterService _deviceParameterService;
@@ -69,6 +71,16 @@ namespace Snmp.WebAPI.Controllers
                 return NotFound(result.Error);
 
             return NoContent();
+        }
+        [HttpGet("{deviceId}/{parameterId}/latest")]
+        public async Task<IActionResult> GetLatestValue(int deviceId, int parameterId)
+        {
+            var result = await _deviceParameterService.GetLatestValueAsync(deviceId, parameterId);
+
+            if (!result.IsSuccess)
+                return NotFound(result.Error);
+
+            return Ok(result.Value);
         }
     }
 }

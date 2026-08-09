@@ -1,12 +1,14 @@
-//using Snmp.WorkerService;
-
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Serilog.Sinks.Elasticsearch;
+using Snmp.Business.Abstract.Redis;
 using Snmp.Business.Mapping;
 using Snmp.Business.Queries.Abstract;
 using Snmp.Business.Queries.Concrete;
+using Snmp.Common.Configuration;
 using Snmp.DataAccess.Abstract;
 using Snmp.DataAccess.Concrete;
+using Snmp.DataAccess.Concrete.Redis;
 using Snmp.EventWorker.BackgroundServices;
 using Snmp.EventWorker.Cache;
 using Snmp.EventWorker.EventHandlers.Abstract.Device;
@@ -17,8 +19,6 @@ using Snmp.EventWorker.EventHandlers.Concrete.Device;
 using Snmp.EventWorker.EventHandlers.Concrete.DeviceParameter;
 using Snmp.EventWorker.EventHandlers.Concrete.Snmp;
 using Snmp.EventWorker.EventHandlers.Concrete.SnmpCredential;
-using Snmp.EventWorker.Redis.Repositories;
-using Snmp.EventWorker.Redis.Services;
 using Snmp.EventWorker.Snmp.Helpers;
 using Snmp.EventWorker.Snmp.Manager;
 using Snmp.EventWorker.Snmp.Operations.Get;
@@ -33,20 +33,31 @@ using Snmp.EventWorker.Strategies.Device;
 using Snmp.EventWorker.Strategies.DeviceParameter;
 using Snmp.EventWorker.Strategies.Snmp;
 using Snmp.EventWorker.Strategies.SnmpCredential;
-using Snmp.Infrastructure.Configuration;
 using SNMP.DAL.Abstract;
 using SNMP.DAL.Concrete;
 using SNMP.DAL.Context;
 using StackExchange.Redis;
 using System.Text.Json;
 
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .WriteTo.Console()
-    .CreateLogger();
-var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddSerilog();
 
+var builder = Host.CreateApplicationBuilder(args);
+
+builder.Services.AddSerilog((services, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(builder.Configuration)
+        .Enrich.FromLogContext()
+        .WriteTo.Console(
+            outputTemplate:
+            "[{Timestamp:HH:mm:ss} {Level:u3}] [CorrelationId:{CorrelationId}] {Message:lj}{NewLine}{Exception}")
+        .WriteTo.Elasticsearch(
+            new ElasticsearchSinkOptions(
+                new Uri(builder.Configuration["ElasticSearch:Uri"]!))
+            {
+                AutoRegisterTemplate = true,
+                IndexFormat = "snmp-worker-logs-{0:yyyy.MM}"
+            });
+});
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSqlConnection")));
 

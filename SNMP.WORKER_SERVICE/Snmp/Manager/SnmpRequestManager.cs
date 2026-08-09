@@ -1,7 +1,7 @@
-﻿using Snmp.Business.DTOs.SnmpCredentials;
+﻿using Snmp.Business.Abstract.Redis;
+using Snmp.Business.DTOs.SnmpCredentials;
 using Snmp.Business.DTOs.SnmpValue;
 using Snmp.Business.Queries.Abstract;
-using Snmp.EventWorker.Redis.Services;
 using Snmp.EventWorker.Snmp.Models;
 using Snmp.EventWorker.Snmp.Services;
 using SNMP.ENTITY.Events.Snmp;

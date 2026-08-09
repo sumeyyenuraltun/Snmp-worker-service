@@ -3,11 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Snmp.EventWorker.Redis.Services
+namespace Snmp.Business.Abstract.Redis
 {
     public interface IRedisService
     {
         Task SaveLatestValueAsync(SnmpValue value);
-        Task<SnmpValue> GetLatestValueAsync(int deviceId, int parameterId);
+        Task<SnmpValue?> GetLatestValueAsync(int deviceId, int parameterId);
     }
 }

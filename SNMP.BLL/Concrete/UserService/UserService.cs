@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Snmp.Business.Abstract.Security;
 using Snmp.Business.Abstract.UserService;
+using Snmp.Business.DTOs.Auth;
 using Snmp.Business.DTOs.User;
 using Snmp.Business.Results;
 using Snmp.DataAccess.Abstract;
@@ -23,16 +24,16 @@ namespace Snmp.Business.Concrete.UserService
             _passwordHasher = passwordHasher;
         }
 
-        public async Task<Result> AddAsync(AddUserDTO addUserDTO, CancellationToken cancellationToken)
+       public async Task<Result> AddAsync(RegisterRequestDTO registerRequestDTO, CancellationToken cancellationToken)
         {
-              var exists = await _userDAL.GetAsync(x =>x.Username == addUserDTO.Username && x.IsActive);
+              var exists = await _userDAL.GetAsync(x =>x.Username == registerRequestDTO.Username && x.IsActive);
 
               if (exists != null)
                   return Result.Failure("Username already exists.");
 
-              var entity = _mapper.Map<User>(addUserDTO);
+              var entity = _mapper.Map<User>(registerRequestDTO);
 
-              entity.PasswordHash = _passwordHasher.Hash(addUserDTO.Password);
+              entity.PasswordHash = _passwordHasher.Hash(registerRequestDTO.Password);
 
               await _userDAL.AddAsync(entity, cancellationToken);
 
@@ -127,6 +128,53 @@ namespace Snmp.Business.Concrete.UserService
 
             return Result<UserAuthDTO>.Success(dto);
 
+        }
+
+        public async Task<Result> UpdateRefreshTokenAsync(int userId, string refreshToken, DateTime expiryTime, CancellationToken cancellationToken)
+        {
+            var user = await  _userDAL.GetAsync(x => x.Id == userId && x.IsActive);
+
+            if(user == null)
+                return Result.Failure("User not found.");
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = expiryTime;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _userDAL.UpdateAsync(user);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return Result.Success();
+        }
+        public async Task<Result<UserAuthDTO>> GetByRefreshTokenAsync(string refreshToken)
+        {
+            var entity = await _userDAL.GetAsync(x =>
+                x.RefreshToken == refreshToken &&
+                x.IsActive);
+
+            if (entity == null)
+                return Result<UserAuthDTO>.Failure("Invalid refresh token.");
+
+            var dto = _mapper.Map<UserAuthDTO>(entity);
+
+            return Result<UserAuthDTO>.Success(dto);
+        }
+        public async Task<Result> ClearRefreshTokenAsync(int userId,CancellationToken cancellationToken)
+        {
+            var user = await _userDAL.GetAsync(x => x.Id == userId && x.IsActive);
+
+            if (user == null)
+                return Result.Failure("User not found.");
+
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = null;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _userDAL.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return Result.Success();
         }
     }
 }

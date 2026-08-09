@@ -1,10 +1,11 @@
-﻿using StackExchange.Redis;
+﻿using Snmp.DataAccess.Abstract;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 
-namespace Snmp.EventWorker.Redis.Repositories
+namespace Snmp.DataAccess.Concrete.Redis
 {
     public class RedisRepository : IRedisRepository
     {

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Snmp.Business.Abstract;
 using Snmp.Business.Abstract.Outbox;
 using Snmp.DataAccess.Abstract;
 using Snmp.Entity.Abstract;
@@ -6,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Snmp.Infrastructure.Outbox
+namespace Snmp.Business.Concrete.Outbox
 {
     public class OutboxPublisher : IOutboxPublisher
     {

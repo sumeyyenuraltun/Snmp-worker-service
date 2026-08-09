@@ -40,13 +40,62 @@ namespace Snmp.Business.Concrete.Auth
                 return Result<AuthResponseDTO>.Failure("Invalid username or password.");
             }
 
-            var token = _jwtService.CreateToken(user);
+            var accessToken = _jwtService.CreateToken(user);
+
+            var refreshToken = _jwtService.GenerateRefreshToken();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+            var updateResult = await _userService.UpdateRefreshTokenAsync(user.Id,refreshToken,DateTime.UtcNow.AddDays(7),cancellationToken);
+
+            if (!updateResult.IsSuccess)
+            {
+                return Result<AuthResponseDTO>.Failure(updateResult.Error!);
+            }
 
             return Result<AuthResponseDTO>.Success(new AuthResponseDTO
             {
-                Token = token
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
             });
 
+        }
+
+        public async Task<Result<AuthResponseDTO>> RefreshTokenAsync(RefreshTokenRequestDTO request, CancellationToken cancellationToken)
+        {
+            var userResult = await _userService.GetByRefreshTokenAsync(request.RefreshToken);
+
+            if (!userResult.IsSuccess || userResult.Value is null)
+            {
+                return Result<AuthResponseDTO>.Failure("Invalid refresh token.");
+            }
+
+            var user = userResult.Value;
+            if (user.RefreshTokenExpiryTime is null ||user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                return Result<AuthResponseDTO>.Failure("Refresh token has expired.");
+            }
+
+            var accessToken = _jwtService.CreateToken(user);
+
+            var newRefreshToken = _jwtService.GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+            var updateResult = await _userService.UpdateRefreshTokenAsync(user.Id, newRefreshToken, DateTime.UtcNow.AddDays(7), cancellationToken);
+
+            if (!updateResult.IsSuccess)
+            {
+                return Result<AuthResponseDTO>.Failure(updateResult.Error!);
+            }
+
+            return Result<AuthResponseDTO>.Success(new AuthResponseDTO
+            {
+                AccessToken = accessToken,
+                RefreshToken = newRefreshToken
+            });
         }
 
         public async Task<Result> RegisterAsync(RegisterRequestDTO request, CancellationToken cancellationToken)
@@ -63,13 +112,23 @@ namespace Snmp.Business.Concrete.Auth
                 return Result.Failure("Passwords do not match.");
             }
 
-            var addUserDto = new AddUserDTO
+            var registerRequestDTO = new RegisterRequestDTO
             {
                 Username = request.Username,
-                Password = request.Password
+                Password = request.Password,
+                ConfirmPassword = request.ConfirmPassword
             };
 
-            return await _userService.AddAsync(addUserDto, cancellationToken);
+            return await _userService.AddAsync(registerRequestDTO, cancellationToken);
+        }
+        public async Task<Result> LogoutAsync(string refreshToken,CancellationToken cancellationToken)
+        {
+            var userResult = await _userService.GetByRefreshTokenAsync(refreshToken);
+
+            if (!userResult.IsSuccess || userResult.Value is null)
+                return Result.Failure("Invalid refresh token.");
+
+            return await _userService.ClearRefreshTokenAsync(userResult.Value.Id,cancellationToken);
         }
     }
 }

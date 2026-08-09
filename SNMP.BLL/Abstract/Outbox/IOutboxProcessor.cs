@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Snmp.Infrastructure.Outbox
+namespace Snmp.Business.Abstract.Outbox
 {
     public interface IOutboxProcessor
     {

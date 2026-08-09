@@ -1,4 +1,5 @@
 ﻿using Snmp.Business.DTOs.DeviceParameter;
+using Snmp.Business.DTOs.Snmp;
 using Snmp.Business.Results;
 using Snmp.DataAccess.Concrete;
 using System;
@@ -18,5 +19,6 @@ namespace Snmp.Business.Abstract.DeviceService
         Task<Result> UpdateAsync(UpdateDeviceParameterDTO updateDeviceParameterDTO,CancellationToken cancellationToken);
 
         Task<Result> DeleteAsync(int id,CancellationToken cancellationToken);
+        Task<Result<LatestSnmpValueDTO>> GetLatestValueAsync(int deviceId, int parameterId);
     }
 }

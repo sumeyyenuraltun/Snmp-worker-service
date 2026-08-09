@@ -38,9 +38,10 @@ namespace Snmp.Business.Mapping
             CreateMap<SnmpCredential, UpdateSnmpCredentialDTO>().ReverseMap();
 
             CreateMap<User, UserDTO>().ReverseMap();
-            CreateMap<User, AddUserDTO>().ReverseMap();
             CreateMap<User, UpdateUserDTO>().ReverseMap();
             CreateMap<User, UserAuthDTO>().ReverseMap();
+
+
 
         }
     }
