@@ -9,5 +9,6 @@
   <Project Path="SNMP.DAL/Snmp.DataAccess.csproj" Id="06b41142-4549-4caf-9d97-17b68f5440de" />
   <Project Path="SNMP.ENTITY/SNMP.ENTITY.csproj" />
   <Project Path="Snmp.SnmpSimulator/Snmp.SnmpSimulator.csproj" Id="c15ecb49-4772-4ed8-b9a2-ec8c143b3c25" />
+  <Project Path="Snmp.Test/Snmp.Test.csproj" Id="ca3b728c-97f6-4742-9684-d65c81ccd7c2" />
   <Project Path="SNMP.WORKER_SERVICE/Snmp.EventWorker.csproj" Id="b8c13b11-3d7a-48a8-99d9-23c1d9d1e3e9" />
 </Solution>

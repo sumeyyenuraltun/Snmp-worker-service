@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Snmp.Business.DTOs.Auth;
 using Snmp.Business.DTOs.DeviceParameter;
 using Snmp.Business.DTOs.Devices;
 using Snmp.Business.DTOs.Parameter;
@@ -40,7 +41,7 @@ namespace Snmp.Business.Mapping
             CreateMap<User, UserDTO>().ReverseMap();
             CreateMap<User, UpdateUserDTO>().ReverseMap();
             CreateMap<User, UserAuthDTO>().ReverseMap();
-
+            CreateMap<RegisterRequestDTO, User>();
 
 
         }
