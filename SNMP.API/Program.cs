@@ -153,7 +153,7 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
     {
-        Title = "AIDCARE API",
+        Title = "SNMP API",
         Version = "v1",
         Description = "Bu API, AIDCARE projesinin servislerini sunar."
     });
