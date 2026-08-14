@@ -19,9 +19,10 @@ namespace Snmp.WebAPI.Controllers
         }
 
         [HttpGet("device/{deviceId}")]
-        public async Task<IActionResult> GetByDeviceId(int deviceId)
+        [Authorize(Roles = "Admin,User")]
+        public async Task<IActionResult> GetByDeviceId(int deviceId, CancellationToken cancellationToken)
         {
-            var result = await _deviceParameterService.GetByDeviceIdAsync(deviceId);
+            var result = await _deviceParameterService.GetByDeviceIdAsync(deviceId, cancellationToken);
 
             if (!result.IsSuccess)
                 return NotFound(result.Error);
@@ -30,9 +31,10 @@ namespace Snmp.WebAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [Authorize(Roles = "Admin,User")]
+        public async Task<IActionResult> GetById(int id,CancellationToken cancellationToken)
         {
-            var result = await _deviceParameterService.GetByIdAsync(id);
+            var result = await _deviceParameterService.GetByIdAsync(id,cancellationToken);
 
             if (!result.IsSuccess)
                 return NotFound(result.Error);
@@ -41,6 +43,7 @@ namespace Snmp.WebAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Add([FromBody] AddDeviceParameterDTO addDeviceParameterDTO, CancellationToken cancellationToken)
         {
             var result = await _deviceParameterService.AddAsync(addDeviceParameterDTO, cancellationToken);
@@ -52,6 +55,7 @@ namespace Snmp.WebAPI.Controllers
         }
 
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update([FromBody] UpdateDeviceParameterDTO updateDeviceParameterDTO, CancellationToken cancellationToken)
         {
             var result = await _deviceParameterService.UpdateAsync(updateDeviceParameterDTO, cancellationToken);
@@ -63,6 +67,7 @@ namespace Snmp.WebAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             var result = await _deviceParameterService.DeleteAsync(id, cancellationToken);
@@ -73,6 +78,7 @@ namespace Snmp.WebAPI.Controllers
             return NoContent();
         }
         [HttpGet("{deviceId}/{parameterId}/latest")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> GetLatestValue(int deviceId, int parameterId)
         {
             var result = await _deviceParameterService.GetLatestValueAsync(deviceId, parameterId);

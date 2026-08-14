@@ -10,9 +10,9 @@ namespace Snmp.Business.Abstract.DeviceService
 {
     public interface IDeviceParameterService
     {
-        Task<Result<List<DeviceParameterDTO>>> GetByDeviceIdAsync(int deviceId);
+        Task<Result<List<DeviceParameterDTO>>> GetByDeviceIdAsync(int deviceId, CancellationToken cancellationToken);
 
-        Task<Result<DeviceParameterDTO>> GetByIdAsync(int id);
+        Task<Result<DeviceParameterDTO>> GetByIdAsync(int id ,CancellationToken cancellationToken);
 
         Task<Result> AddAsync(AddDeviceParameterDTO addDeviceParameterDTO,CancellationToken cancellationToken);
 

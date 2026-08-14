@@ -20,14 +20,14 @@ namespace Snmp.Business.Queries.Concrete
             _mapper = mapper;
         }
 
-        public async Task<Result<List<DeviceDTO>>> GetAllAsync()
+        public async Task<Result<List<DeviceDTO>>> GetAllAsync(CancellationToken cancellationToken)
         {
             var devices = await _deviceDAL.GetAllAsync(x => x.IsActive);
 
             return Result<List<DeviceDTO>>.Success(_mapper.Map<List<DeviceDTO>>(devices));
         }
 
-        public async Task<Result<DeviceDTO>> GetByIdAsync(int id)
+        public async Task<Result<DeviceDTO>> GetByIdAsync(int id,CancellationToken cancellationToken)
         {
             var device = await _deviceDAL.GetAsync(x => x.Id == id && x.IsActive);
 

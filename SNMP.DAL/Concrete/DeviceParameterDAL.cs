@@ -17,21 +17,21 @@ namespace Snmp.DataAccess.Concrete
         {
             _context = context;
         }
-        public async Task<List<DeviceParameter>> GetByDeviceIdAsync(int deviceId)
+        public async Task<List<DeviceParameter>> GetByDeviceIdAsync(int deviceId, CancellationToken cancellationToken)
         {
             return await _context.DeviceParameters
                 .Include(x => x.Parameter)
                 .Where(x => x.DeviceId == deviceId)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<DeviceParameter?> GetByDeviceIdAndParameterIdAsync(int deviceId,int parameterId)
+        public async Task<DeviceParameter?> GetByDeviceIdAndParameterIdAsync(int deviceId,int parameterId, CancellationToken cancellationToken)
         {
             return await _context.DeviceParameters
                 .Include(x => x.Parameter)
                 .FirstOrDefaultAsync(x =>
                     x.DeviceId == deviceId &&
-                    x.ParameterId == parameterId);
+                    x.ParameterId == parameterId, cancellationToken);
         }
     }
 }

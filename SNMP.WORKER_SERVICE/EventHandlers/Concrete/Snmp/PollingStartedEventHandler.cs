@@ -22,7 +22,7 @@ namespace Snmp.EventWorker.EventHandlers.Concrete.Snmp
         {
             ArgumentNullException.ThrowIfNull(devicePollingStartedEvent);
 
-            _logger.LogInformation("PollingStarted event received. DeviceId", devicePollingStartedEvent.AggregateId);
+            _logger.LogInformation("PollingStarted event received. DeviceId : {DeviceId}", devicePollingStartedEvent.AggregateId);
 
             await _pollingManager.StartAsync(devicePollingStartedEvent,cancellationToken);
 

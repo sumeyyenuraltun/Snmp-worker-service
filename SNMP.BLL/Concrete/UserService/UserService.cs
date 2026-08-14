@@ -15,36 +15,45 @@ namespace Snmp.Business.Concrete.UserService
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IRoleDAL _roleDAL;
 
-        public UserService(IUserDAL userDAL, IMapper mapper, IUnitOfWork unitOfWork, IPasswordHasher passwordHasher)
+        public UserService(IUserDAL userDAL, IMapper mapper, IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IRoleDAL roleDAL)
         {
             _userDAL = userDAL;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
+            _roleDAL = roleDAL;
         }
 
        public async Task<Result> AddAsync(RegisterRequestDTO registerRequestDTO, CancellationToken cancellationToken)
         {
-              var exists = await _userDAL.GetAsync(x =>x.Username == registerRequestDTO.Username && x.IsActive);
+            var exists = await _userDAL.GetAsync(x =>x.Username == registerRequestDTO.Username && x.IsActive);
 
-              if (exists != null)
+            if (exists != null)
                   return Result.Failure("Username already exists.");
 
-              var entity = _mapper.Map<User>(registerRequestDTO);
+            var role = await _roleDAL.GetAsync(x => x.Name == "User" && x.IsActive);
 
-              entity.PasswordHash = _passwordHasher.Hash(registerRequestDTO.Password);
+            if (role == null)
+                return Result.Failure("Default role not found");
 
-              await _userDAL.AddAsync(entity, cancellationToken);
 
-              await _unitOfWork.SaveChangesAsync(cancellationToken);
+            var entity = _mapper.Map<User>(registerRequestDTO);
 
-              return Result.Success();
+            entity.PasswordHash = _passwordHasher.Hash(registerRequestDTO.Password);
+            entity.RoleId = role.Id;
+
+            await _userDAL.AddAsync(entity, cancellationToken);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return Result.Success();
         }
 
         public async Task<Result> UpdateAsync(UpdateUserDTO updateUserDTO, CancellationToken cancellationToken)
         {
-            var entity = await _userDAL.GetAsync(x =>x.Id == updateUserDTO.Id && x.IsActive);
+            var entity = await _userDAL.GetAsync(x =>x.Id == updateUserDTO.Id && x.IsActive, cancellationToken);
 
             if (entity == null)
                 return Result.Failure("User not found.");
@@ -52,7 +61,7 @@ namespace Snmp.Business.Concrete.UserService
             var usernameExists = await _userDAL.GetAsync(x =>
                 x.Username == updateUserDTO.Username &&
                 x.Id != updateUserDTO.Id &&
-                x.IsActive);
+                x.IsActive, cancellationToken);
 
             if (usernameExists != null)
                 return Result.Failure("Username already exists.");
@@ -66,7 +75,7 @@ namespace Snmp.Business.Concrete.UserService
 
             entity.UpdatedAt = DateTime.UtcNow;
 
-            await _userDAL.UpdateAsync(entity);
+            await _userDAL.UpdateAsync(entity,cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -77,7 +86,7 @@ namespace Snmp.Business.Concrete.UserService
         {
             var entity = await _userDAL.GetAsync(x =>
                 x.Id == id &&
-                x.IsActive);
+                x.IsActive, cancellationToken);
 
             if (entity == null)
                 return Result.Failure("User not found.");
@@ -85,27 +94,27 @@ namespace Snmp.Business.Concrete.UserService
             entity.IsActive = false;
             entity.UpdatedAt = DateTime.UtcNow;
 
-            await _userDAL.UpdateAsync(entity);
+            await _userDAL.UpdateAsync(entity, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success();
         }
 
-        public async Task<Result<List<UserDTO>>> GetAllAsync()
+        public async Task<Result<List<UserDTO>>> GetAllAsync(CancellationToken cancellationToken)
         {
-            var users = await _userDAL.GetAllAsync(x => x.IsActive);
+            var users = await _userDAL.GetAllAsync(x => x.IsActive ,cancellationToken);
 
             var dto = _mapper.Map<List<UserDTO>>(users);
 
             return Result<List<UserDTO>>.Success(dto);
         }
 
-        public async Task<Result<UserDTO>> GetByIdAsync(int id)
+        public async Task<Result<UserDTO>> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
             var entity = await _userDAL.GetAsync(x =>
                 x.Id == id &&
-                x.IsActive);
+                x.IsActive, cancellationToken);
 
             if (entity == null)
                 return Result<UserDTO>.Failure("User not found.");
@@ -115,13 +124,11 @@ namespace Snmp.Business.Concrete.UserService
             return Result<UserDTO>.Success(dto);
         }
 
-        public async Task<Result<UserAuthDTO>> GetByUsernameAsync(string username)
+        public async Task<Result<UserAuthDTO>> GetByUsernameAsync(string username, CancellationToken cancellationToken)
         {
-            var entity = await _userDAL.GetAsync(x =>
-                x.Username == username &&
-                x.IsActive);
+            var entity = await _userDAL.GetAsync(x => x.Username == username && x.IsActive,cancellationToken,u => u.Role);
 
-            if(entity == null)
+            if (entity == null)
                 return Result<UserAuthDTO>.Failure("User not found.");
 
             var dto = _mapper.Map<UserAuthDTO>(entity);
@@ -132,7 +139,7 @@ namespace Snmp.Business.Concrete.UserService
 
         public async Task<Result> UpdateRefreshTokenAsync(int userId, string refreshToken, DateTime expiryTime, CancellationToken cancellationToken)
         {
-            var user = await  _userDAL.GetAsync(x => x.Id == userId && x.IsActive);
+            var user = await  _userDAL.GetAsync(x => x.Id == userId && x.IsActive, cancellationToken);
 
             if(user == null)
                 return Result.Failure("User not found.");
@@ -141,17 +148,15 @@ namespace Snmp.Business.Concrete.UserService
             user.RefreshTokenExpiryTime = expiryTime;
             user.UpdatedAt = DateTime.UtcNow;
 
-            await _userDAL.UpdateAsync(user);
+            await _userDAL.UpdateAsync(user, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success();
         }
-        public async Task<Result<UserAuthDTO>> GetByRefreshTokenAsync(string refreshToken)
+        public async Task<Result<UserAuthDTO>> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
         {
-            var entity = await _userDAL.GetAsync(x =>
-                x.RefreshToken == refreshToken &&
-                x.IsActive);
+            var entity = await _userDAL.GetAsync(x => x.RefreshToken == refreshToken && x.IsActive,cancellationToken,x => x.Role);
 
             if (entity == null)
                 return Result<UserAuthDTO>.Failure("Invalid refresh token.");
@@ -162,7 +167,7 @@ namespace Snmp.Business.Concrete.UserService
         }
         public async Task<Result> ClearRefreshTokenAsync(int userId,CancellationToken cancellationToken)
         {
-            var user = await _userDAL.GetAsync(x => x.Id == userId && x.IsActive);
+            var user = await _userDAL.GetAsync(x => x.Id == userId && x.IsActive, cancellationToken);
 
             if (user == null)
                 return Result.Failure("User not found.");
@@ -171,7 +176,7 @@ namespace Snmp.Business.Concrete.UserService
             user.RefreshTokenExpiryTime = null;
             user.UpdatedAt = DateTime.UtcNow;
 
-            await _userDAL.UpdateAsync(user);
+            await _userDAL.UpdateAsync(user, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success();

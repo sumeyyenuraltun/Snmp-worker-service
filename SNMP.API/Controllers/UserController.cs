@@ -8,7 +8,7 @@ namespace Snmp.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [AllowAnonymous]
+    [Authorize(Roles = "Admin")]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -18,18 +18,19 @@ namespace Snmp.WebAPI.Controllers
             _userService = userService;
         }
 
+       
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
-             var result = await _userService.GetAllAsync();
+             var result = await _userService.GetAllAsync(cancellationToken);
              return Ok(result.Value);
             
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         {
-            var result = await _userService.GetByIdAsync(id);
+            var result = await _userService.GetByIdAsync(id, cancellationToken);
             if (!result.IsSuccess)
                 return NotFound(result.Error);
             return Ok(result);
@@ -54,9 +55,9 @@ namespace Snmp.WebAPI.Controllers
         }
 
         [HttpGet("username/{username}")]
-        public async Task<IActionResult> GetByUsername(string username)
+        public async Task<IActionResult> GetByUsername(string username, CancellationToken cancellationToken)
         {
-            var result = await _userService.GetByUsernameAsync(username);
+            var result = await _userService.GetByUsernameAsync(username, cancellationToken);
             if (!result.IsSuccess)
                 return NotFound(result.Error);
             return Ok(result);

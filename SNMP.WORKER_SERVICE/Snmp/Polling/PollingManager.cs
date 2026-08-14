@@ -96,7 +96,13 @@ namespace Snmp.EventWorker.Snmp.Polling
                         Oid = parameter.Oid,
                         Credential = configuration.Credential
                     };
-
+                    _logger.LogInformation(
+    "POLLING -> IP:{Ip}, User:{User}, Auth:{Auth}, Privacy:{Privacy}, OID:{Oid}",
+    request.IpAddress,
+    request.Credential.UserName,
+    request.Credential.AuthProtocol,
+    request.Credential.PrivacyProtocol,
+    request.Oid);
                     var result = await snmpService.GetAsync(request, token);
 
                     if (result != null)

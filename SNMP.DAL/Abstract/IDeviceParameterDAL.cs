@@ -8,7 +8,7 @@ namespace Snmp.DataAccess.Abstract
 {
     public interface IDeviceParameterDAL : IBaseRepository<DeviceParameter>
     {
-        Task<List<DeviceParameter>> GetByDeviceIdAsync(int deviceId);
-        Task<DeviceParameter?> GetByDeviceIdAndParameterIdAsync(int deviceId,int parameterId);
+        Task<List<DeviceParameter>> GetByDeviceIdAsync(int deviceId, CancellationToken cancellationToken);
+        Task<DeviceParameter?> GetByDeviceIdAndParameterIdAsync(int deviceId,int parameterId, CancellationToken cancellationToken);
     }
 }

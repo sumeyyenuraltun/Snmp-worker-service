@@ -8,9 +8,9 @@ namespace Snmp.Business.Abstract.DeviceService
 {
     public interface IParameterService
     {
-        Task<Result<List<ParameterDTO>>> GetAllAsync();
+        Task<Result<List<ParameterDTO>>> GetAllAsync(CancellationToken cancellationToken);
 
-        Task<Result<ParameterDTO>> GetByIdAsync(int id);
+        Task<Result<ParameterDTO>> GetByIdAsync(int id, CancellationToken cancellationToken);
 
         Task<Result> AddAsync(AddParameterDTO addParameterDTO, CancellationToken cancellationToken);
 

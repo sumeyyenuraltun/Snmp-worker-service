@@ -73,11 +73,11 @@ namespace Snmp.EventWorker.Cache
             var deviceParameterService = scope.ServiceProvider.GetRequiredService<IDeviceParameterQueryService>();
             var credentialService = scope.ServiceProvider.GetRequiredService<ISnmpCredentialQueryService>();
 
-            var deviceResult = await deviceService.GetByIdAsync(deviceId);
+            var deviceResult = await deviceService.GetByIdAsync(deviceId,cancellationToken);
 
-            var credentialResult =await credentialService.GetByDeviceIdAsync(deviceId);
+            var credentialResult =await credentialService.GetByDeviceIdAsync(deviceId, cancellationToken);
 
-            var deviceParameterResult = await deviceParameterService.GetByDeviceIdAsync(deviceId);
+            var deviceParameterResult = await deviceParameterService.GetByDeviceIdAsync(deviceId,cancellationToken);
 
 
             if (!deviceResult.IsSuccess || deviceResult.Value is null)

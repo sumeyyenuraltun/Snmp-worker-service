@@ -25,13 +25,13 @@ namespace SNMP.DAL.Concrete
 
         }
 
-        public async Task DeleteAsync(TEntity entity)
+        public Task DeleteAsync(TEntity entity, CancellationToken cancellationToken)
         {
             _context.Set<TEntity>().Remove(entity);
-            await Task.CompletedTask;
+           return Task.CompletedTask;
         }
 
-        public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> filter,params Expression<Func<TEntity, object>>[] includes)
+        public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken,params Expression<Func<TEntity, object>>[] includes)
         {
             IQueryable<TEntity> query = _context.Set<TEntity>();
 
@@ -40,15 +40,15 @@ namespace SNMP.DAL.Concrete
                 query = query.Include(include);
             }
 
-            return await query.FirstOrDefaultAsync(filter);
+            return await query.FirstOrDefaultAsync(filter, cancellationToken);
         }
 
-        public async Task<List<TEntity>> GetAllAsync()
+        public async Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken)
         {
-            return await _context.Set<TEntity>().ToListAsync();
+            return await _context.Set<TEntity>().ToListAsync(cancellationToken);
         }
 
-        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? filter = null,params Expression<Func<TEntity, object>>[] includes)
+        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includes)
         {
             IQueryable<TEntity> query = _context.Set<TEntity>();
 
@@ -62,18 +62,25 @@ namespace SNMP.DAL.Concrete
                 query = query.Where(filter);
             }
 
-            return await query.ToListAsync();
+            return await query.ToListAsync(cancellationToken);
         }
 
-        public async Task<TEntity?> GetByIdAsync(int id)
+        public async Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
-            return await _context.Set<TEntity>().FindAsync(id);
+            return await _context.Set<TEntity>().FindAsync(new object[] { id }, cancellationToken);
         }
 
-        public async Task UpdateAsync(TEntity entity)
+        public Task UpdateAsync(TEntity entity, CancellationToken cancellationToken)
         {
             _context.Set<TEntity>().Update(entity);
-            await Task.CompletedTask;
+            return Task.CompletedTask;
         }
+
+        public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate,CancellationToken cancellationToken = default)
+        {
+            return await _context.Set<TEntity>().AnyAsync(predicate, cancellationToken);
+        }
+
+
     }
 }

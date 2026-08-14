@@ -8,6 +8,6 @@ namespace Snmp.Business.Queries.Abstract
 {
     public interface ISnmpCredentialQueryService
     {
-        Task<Result<SnmpCredentialDTO>> GetByDeviceIdAsync(int deviceId);
+        Task<Result<SnmpCredentialDTO>> GetByDeviceIdAsync(int deviceId, CancellationToken cancellationToken);
     }
 }

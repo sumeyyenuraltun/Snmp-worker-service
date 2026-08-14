@@ -19,18 +19,18 @@ namespace Snmp.Business.Concrete.DeviceService
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<List<ParameterDTO>>> GetAllAsync()
+        public async Task<Result<List<ParameterDTO>>> GetAllAsync(CancellationToken cancellationToken)
         {
-            var parameters = await _parameterDAL.GetAllAsync();
+            var parameters = await _parameterDAL.GetAllAsync(cancellationToken);
 
             var dto = _mapper.Map<List<ParameterDTO>>(parameters);
 
             return Result<List<ParameterDTO>>.Success(dto);
         }
 
-        public async Task<Result<ParameterDTO>> GetByIdAsync(int id)
+        public async Task<Result<ParameterDTO>> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
-            var entity = await _parameterDAL.GetByIdAsync(id);
+            var entity = await _parameterDAL.GetByIdAsync(id, cancellationToken);
 
             if (entity == null)
                 return Result<ParameterDTO>.Failure("Parameter not found.");
@@ -53,14 +53,14 @@ namespace Snmp.Business.Concrete.DeviceService
 
         public async Task<Result> UpdateAsync(UpdateParameterDTO updateParameterDTO, CancellationToken cancellationToken)
         {
-            var entity = await _parameterDAL.GetByIdAsync(updateParameterDTO.Id);
+            var entity = await _parameterDAL.GetByIdAsync(updateParameterDTO.Id , cancellationToken);
 
             if (entity == null)
                 return Result.Failure("Parameter not found.");
 
             _mapper.Map(updateParameterDTO, entity);
 
-            await _parameterDAL.UpdateAsync(entity);
+            await _parameterDAL.UpdateAsync(entity, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

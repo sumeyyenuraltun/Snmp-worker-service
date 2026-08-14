@@ -8,18 +8,19 @@ namespace SNMP.DAL.Abstract
 {
     public interface IBaseRepository<TEntity> where TEntity: BaseEntity
     {
-        Task AddAsync(TEntity entity, CancellationToken cancellationToken);
+        Task AddAsync(TEntity entity, CancellationToken cancellationToken = default);
 
-        Task UpdateAsync(TEntity entity);
+        Task UpdateAsync(TEntity entity,CancellationToken cancellationToken = default);
 
-        Task DeleteAsync(TEntity entity);
+        Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
 
-        Task<List<TEntity>> GetAllAsync();
+        Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default);
 
-        Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? filter = null, params Expression<Func<TEntity, object>>[] includes);
+        Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includes);
 
-        Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> filter,params Expression<Func<TEntity, object>>[] includes);
+        Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includes);
 
-        Task<TEntity?> GetByIdAsync(int id);
+        Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+        Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate,CancellationToken cancellationToken = default);
     }
 }

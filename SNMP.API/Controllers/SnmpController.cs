@@ -8,7 +8,7 @@ namespace Snmp.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Admin,User")]
     public class SnmpController : ControllerBase
     {
         private readonly ISnmpRequestedService _snmpRequestedService;

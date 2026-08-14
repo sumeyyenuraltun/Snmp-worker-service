@@ -29,7 +29,7 @@ namespace Snmp.Business.Concrete.DeviceService
         {
             var exists = await _snmpCredentialDAL.GetAsync(x =>
                 x.DeviceId == dto.DeviceId &&
-                x.IsActive);
+                x.IsActive, cancellationToken);
 
             if (exists != null)
                 return Result.Failure("SNMP credentials already exist for this device.");
@@ -48,7 +48,7 @@ namespace Snmp.Business.Concrete.DeviceService
         {
             var entity = await _snmpCredentialDAL.GetAsync(x =>
                 x.DeviceId == dto.DeviceId &&
-                x.IsActive);
+                x.IsActive, cancellationToken);
 
             if (entity == null)
                 return Result.Failure("SNMP credentials not found.");
@@ -57,7 +57,7 @@ namespace Snmp.Business.Concrete.DeviceService
 
             entity.UpdatedAt = DateTime.UtcNow;
 
-            await _snmpCredentialDAL.UpdateAsync(entity);
+            await _snmpCredentialDAL.UpdateAsync(entity, cancellationToken);
 
             await _outboxService.AddMessageAsync(new SnmpCredentialUpdatedEvent(entity.DeviceId),cancellationToken);
 
@@ -68,7 +68,7 @@ namespace Snmp.Business.Concrete.DeviceService
 
         public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken)
         {
-            var entity = await _snmpCredentialDAL.GetByIdAsync(id);
+            var entity = await _snmpCredentialDAL.GetByIdAsync(id, cancellationToken);
 
             if (entity == null)
                 return Result.Failure("SNMP credentials not found.");
@@ -76,7 +76,7 @@ namespace Snmp.Business.Concrete.DeviceService
             entity.IsActive = false;
             entity.UpdatedAt = DateTime.UtcNow;
 
-            await _snmpCredentialDAL.UpdateAsync(entity);
+            await _snmpCredentialDAL.UpdateAsync(entity, cancellationToken);
             await _outboxService.AddMessageAsync(new SnmpCredentialDeletedEvent( entity.DeviceId ),cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -84,11 +84,11 @@ namespace Snmp.Business.Concrete.DeviceService
             return Result.Success();
         }
 
-        public async Task<Result<SnmpCredentialDTO>> GetByDeviceIdAsync(int deviceId)
+        public async Task<Result<SnmpCredentialDTO>> GetByDeviceIdAsync(int deviceId , CancellationToken cancellationToken)
         {
             var entity = await _snmpCredentialDAL.GetAsync(x =>
                 x.DeviceId == deviceId &&
-                x.IsActive);
+                x.IsActive, cancellationToken);
 
             if (entity == null)
                 return Result<SnmpCredentialDTO>.Failure("SNMP credentials not found.");
@@ -97,17 +97,17 @@ namespace Snmp.Business.Concrete.DeviceService
 
             return Result<SnmpCredentialDTO>.Success(dto);
         }
-        public async Task<Result<List<SnmpCredentialDTO>>> GetAllAsync()
+        public async Task<Result<List<SnmpCredentialDTO>>> GetAllAsync(CancellationToken cancellationToken)
         {
-            var credentials = await _snmpCredentialDAL.GetAllAsync();
+            var credentials = await _snmpCredentialDAL.GetAllAsync(cancellationToken);
 
             var dto = _mapper.Map<List<SnmpCredentialDTO>>(credentials);
 
             return Result<List<SnmpCredentialDTO>>.Success(dto);
         }
-        public async Task<Result<SnmpCredentialDTO>> GetByIdAsync(int id)
+        public async Task<Result<SnmpCredentialDTO>> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
-            var entity = await _snmpCredentialDAL.GetByIdAsync(id);
+            var entity = await _snmpCredentialDAL.GetByIdAsync(id, cancellationToken);
 
             if (entity == null)
                 return Result<SnmpCredentialDTO>.Failure("SNMP credentials not found.");

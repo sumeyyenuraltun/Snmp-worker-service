@@ -8,7 +8,7 @@ namespace Snmp.Business.Queries.Abstract
 {
     public interface IDeviceParameterQueryService
     {
-        Task<Result<List<DeviceParameterDTO>>> GetByDeviceIdAsync(int deviceId);
-        Task<Result<DeviceParameterDTO>> GetByDeviceIdAndParameterIdAsync(int deviceId,int parameterId);
+        Task<Result<List<DeviceParameterDTO>>> GetByDeviceIdAsync(int deviceId, CancellationToken cancellationToken);
+        Task<Result<DeviceParameterDTO>> GetByDeviceIdAndParameterIdAsync(int deviceId,int parameterId, CancellationToken cancellationToken);
     }
 }

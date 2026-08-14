@@ -3,6 +3,7 @@ using Snmp.Business.DTOs.Auth;
 using Snmp.Business.DTOs.DeviceParameter;
 using Snmp.Business.DTOs.Devices;
 using Snmp.Business.DTOs.Parameter;
+using Snmp.Business.DTOs.Role;
 using Snmp.Business.DTOs.SnmpCredentials;
 using Snmp.Business.DTOs.User;
 using Snmp.Entity.Concrete;
@@ -40,9 +41,13 @@ namespace Snmp.Business.Mapping
 
             CreateMap<User, UserDTO>().ReverseMap();
             CreateMap<User, UpdateUserDTO>().ReverseMap();
-            CreateMap<User, UserAuthDTO>().ReverseMap();
+            CreateMap<User, UserAuthDTO>().ForMember(dest => dest.RoleName,opt => opt.MapFrom(src => src.Role.Name));
             CreateMap<RegisterRequestDTO, User>();
 
+            CreateMap<Role, RoleDTO>().ReverseMap();
+            CreateMap<Role, UpdateRoleDTO>().ReverseMap();
+            CreateMap<Role, AddRoleDTO>().ReverseMap();
+            CreateMap<Role, UpdateUserRoleDTO>().ReverseMap();
 
         }
     }

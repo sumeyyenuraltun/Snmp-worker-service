@@ -15,9 +15,9 @@ namespace Snmp.Business.Abstract.DeviceService
 
         Task<Result> DeleteAsync(int id, CancellationToken cancellationToken);
 
-        Task<Result<SnmpCredentialDTO>> GetByDeviceIdAsync(int deviceId);
-        Task<Result<List<SnmpCredentialDTO>>> GetAllAsync();
+        Task<Result<SnmpCredentialDTO>> GetByDeviceIdAsync(int deviceId, CancellationToken cancellationToken);
+        Task<Result<List<SnmpCredentialDTO>>> GetAllAsync(CancellationToken cancellationToken);
 
-        Task<Result<SnmpCredentialDTO>> GetByIdAsync(int id);
+        Task<Result<SnmpCredentialDTO>> GetByIdAsync(int id, CancellationToken cancellationToken);
     }
 }

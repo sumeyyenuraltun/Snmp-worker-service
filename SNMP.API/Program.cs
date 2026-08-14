@@ -76,6 +76,7 @@ builder.Services.AddScoped<IDeviceDAL, DeviceDAL>();
 builder.Services.AddScoped<ISnmpCredentialDAL, SnmpCredentialDAL>();
 builder.Services.AddScoped<IParameterDAL, ParameterDAL>();
 builder.Services.AddScoped<IDeviceParameterDAL, DeviceParameterDAL>();
+builder.Services.AddScoped<IRoleDAL, RoleDAL>();
 
 builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped<ISnmpCredentialService, SnmpCredentialService>();
@@ -83,6 +84,7 @@ builder.Services.AddScoped<ISnmpRequestedService, SnmpRequestedService>();
 builder.Services.AddScoped<IPollingService, PollingService>();
 builder.Services.AddScoped<IParameterService, ParameterService>();
 builder.Services.AddScoped<IDeviceParameterService, DeviceParameterService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
 
 builder.Services.AddSingleton<IEventPublisher , RabbitMQEventPublisher>();
 
@@ -155,7 +157,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "SNMP API",
         Version = "v1",
-        Description = "Bu API, AIDCARE projesinin servislerini sunar."
+        Description = "Bu API, SNMP API projesinin servislerini sunar."
     });
 
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.OpenApiSecurityScheme

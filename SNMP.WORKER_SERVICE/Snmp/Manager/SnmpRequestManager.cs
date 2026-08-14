@@ -30,7 +30,7 @@ namespace Snmp.EventWorker.Snmp.Manager
 
         public async Task ExecuteGetAsync(SnmpGetRequestedEvent snmpGetRequestedEvent, CancellationToken cancellationToken = default)
         {
-            var request = await BuildRequestAsync(snmpGetRequestedEvent.DeviceId, snmpGetRequestedEvent.ParameterId,snmpGetRequestedEvent.TimeoutMilliseconds);
+            var request = await BuildRequestAsync(snmpGetRequestedEvent.DeviceId, snmpGetRequestedEvent.ParameterId,snmpGetRequestedEvent.TimeoutMilliseconds, cancellationToken);
 
             var result = await _snmpService.GetAsync(request,cancellationToken);
 
@@ -51,7 +51,7 @@ namespace Snmp.EventWorker.Snmp.Manager
 
         public async Task ExecuteGetNextAsync(SnmpGetNextRequestedEvent snmpGetNextRequestedEvent,CancellationToken cancellationToken = default)
         {
-            var request = await BuildRequestAsync(snmpGetNextRequestedEvent.DeviceId, snmpGetNextRequestedEvent.ParameterId,snmpGetNextRequestedEvent.TimeoutMilliseconds);
+            var request = await BuildRequestAsync(snmpGetNextRequestedEvent.DeviceId, snmpGetNextRequestedEvent.ParameterId,snmpGetNextRequestedEvent.TimeoutMilliseconds, cancellationToken);
 
             var result = await _snmpService.GetNextAsync(request,cancellationToken);
 
@@ -72,7 +72,7 @@ namespace Snmp.EventWorker.Snmp.Manager
 
         public async Task ExecuteSetAsync(SnmpSetRequestedEvent snmpSetRequestedEvent, CancellationToken cancellationToken = default)
         {
-            var request = await BuildRequestAsync(snmpSetRequestedEvent.DeviceId,snmpSetRequestedEvent.ParameterId, snmpSetRequestedEvent.TimeoutMilliseconds);
+            var request = await BuildRequestAsync(snmpSetRequestedEvent.DeviceId,snmpSetRequestedEvent.ParameterId, snmpSetRequestedEvent.TimeoutMilliseconds, cancellationToken);
 
             request.Value = snmpSetRequestedEvent.Value;
 
@@ -83,7 +83,7 @@ namespace Snmp.EventWorker.Snmp.Manager
 
         public async Task ExecuteWalkAsync(SnmpWalkRequestedEvent snmpWalkRequestedEvent, CancellationToken cancellationToken = default)
         {
-            var request = await BuildRequestAsync(  snmpWalkRequestedEvent.DeviceId,snmpWalkRequestedEvent.RootParameterId, snmpWalkRequestedEvent.TimeoutMilliseconds);
+            var request = await BuildRequestAsync(  snmpWalkRequestedEvent.DeviceId,snmpWalkRequestedEvent.RootParameterId, snmpWalkRequestedEvent.TimeoutMilliseconds, cancellationToken);
 
             var result = await _snmpService.WalkAsync(request, cancellationToken);
 
@@ -103,29 +103,35 @@ namespace Snmp.EventWorker.Snmp.Manager
             _logger.LogInformation("SNMP WALK completed. Count:{Count}",result.Count);
         }
 
-        private async Task<SnmpRequest> BuildRequestAsync(int deviceId, int parameterId, int timeoutMilliseconds)
+        private async Task<SnmpRequest> BuildRequestAsync(int deviceId, int parameterId, int timeoutMilliseconds, CancellationToken cancellationToken)
         {
-            var deviceResult = await _deviceQueryService.GetByIdAsync(deviceId);
+            var deviceResult = await _deviceQueryService.GetByIdAsync(deviceId, cancellationToken);
 
             if (!deviceResult.IsSuccess || deviceResult.Value == null)
                 throw new Exception($"Device not found. DeviceId:{deviceId}");
 
             var device = deviceResult.Value;
 
-            var credentialResult = await _credentialQueryService.GetByDeviceIdAsync(deviceId);
+            var credentialResult = await _credentialQueryService.GetByDeviceIdAsync(deviceId, cancellationToken);
 
             if (!credentialResult.IsSuccess || credentialResult.Value == null)
                 throw new Exception($"Credential not found. DeviceId:{deviceId}");
 
             var credential = credentialResult.Value;
 
-            var parameterResult =await _deviceParameterQueryService.GetByDeviceIdAndParameterIdAsync(deviceId, parameterId);
+            var parameterResult =await _deviceParameterQueryService.GetByDeviceIdAndParameterIdAsync(deviceId, parameterId, cancellationToken);
 
             if (!parameterResult.IsSuccess || parameterResult.Value == null)
                 throw new Exception($"DeviceParameter not found. DeviceId:{deviceId}, ParameterId:{parameterId}");
 
             var parameter = parameterResult.Value;
-
+            _logger.LogInformation(
+    "MANUAL -> IP:{Ip}, User:{User}, Sec:{Sec}, Auth:{Auth}, Priv:{Priv}",
+    device.IpAddress,
+    credential.UserName,
+    credential.SecurityLevel,
+    credential.AuthProtocol,
+    credential.PrivacyProtocol);
             return new SnmpRequest
             {
                 IpAddress = device.IpAddress,

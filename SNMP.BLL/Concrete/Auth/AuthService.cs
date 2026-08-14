@@ -26,7 +26,7 @@ namespace Snmp.Business.Concrete.Auth
 
         public async Task<Result<AuthResponseDTO>> LoginAsync(LoginRequestDTO request, CancellationToken cancellationToken)
         {
-            var userResult = await _userService.GetByUsernameAsync(request.Username);
+            var userResult = await _userService.GetByUsernameAsync(request.Username, cancellationToken);
 
             if (!userResult.IsSuccess || userResult.Value is null)
             {
@@ -64,7 +64,7 @@ namespace Snmp.Business.Concrete.Auth
 
         public async Task<Result<AuthResponseDTO>> RefreshTokenAsync(RefreshTokenRequestDTO request, CancellationToken cancellationToken)
         {
-            var userResult = await _userService.GetByRefreshTokenAsync(request.RefreshToken);
+            var userResult = await _userService.GetByRefreshTokenAsync(request.RefreshToken, cancellationToken);
 
             if (!userResult.IsSuccess || userResult.Value is null)
             {
@@ -100,7 +100,7 @@ namespace Snmp.Business.Concrete.Auth
 
         public async Task<Result> RegisterAsync(RegisterRequestDTO request, CancellationToken cancellationToken)
         {
-            var existingUserResult = await _userService.GetByUsernameAsync(request.Username);
+            var existingUserResult = await _userService.GetByUsernameAsync(request.Username, cancellationToken);
 
             if (existingUserResult.IsSuccess)
             {
@@ -123,7 +123,7 @@ namespace Snmp.Business.Concrete.Auth
         }
         public async Task<Result> LogoutAsync(string refreshToken,CancellationToken cancellationToken)
         {
-            var userResult = await _userService.GetByRefreshTokenAsync(refreshToken);
+            var userResult = await _userService.GetByRefreshTokenAsync(refreshToken, cancellationToken);
 
             if (!userResult.IsSuccess || userResult.Value is null)
                 return Result.Failure("Invalid refresh token.");

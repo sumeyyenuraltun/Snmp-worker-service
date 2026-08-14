@@ -7,6 +7,7 @@ using SNMP.DAL.Abstract;
 using SNMP.ENTITY.Events.Device;
 using SNMP.ENTITY.Concrete;
 using Snmp.Business.Abstract.DeviceService;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Snmp.Business.Concrete.DeviceService
 {
@@ -45,7 +46,7 @@ namespace Snmp.Business.Concrete.DeviceService
 
         public async Task<Result> UpdateAsync(UpdateDeviceDTO dto, CancellationToken cancellationToken)
         {
-            var entity = await _deviceDAL.GetAsync(x => x.Id == dto.Id);
+            var entity = await _deviceDAL.GetAsync(x => x.Id == dto.Id, cancellationToken);
 
             if (entity == null)
                 return Result.Failure("Device couldn't find.");
@@ -57,7 +58,7 @@ namespace Snmp.Business.Concrete.DeviceService
 
             entity.UpdatedAt = DateTime.UtcNow;
 
-            await _deviceDAL.UpdateAsync(entity);
+            await _deviceDAL.UpdateAsync(entity, cancellationToken);
 
             if(oldIpAddress != entity.IpAddress || oldPort != entity.Port)
             {
@@ -69,7 +70,7 @@ namespace Snmp.Business.Concrete.DeviceService
 
         public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken)
         {
-            var entity = await _deviceDAL.GetAsync(x => x.Id == id);
+            var entity = await _deviceDAL.GetAsync(x => x.Id == id, cancellationToken);
 
             if (entity == null)
                 return Result.Failure("Device couldn't find.");
@@ -77,24 +78,24 @@ namespace Snmp.Business.Concrete.DeviceService
             entity.IsActive = false;
             entity.UpdatedAt = DateTime.UtcNow;
 
-            await _deviceDAL.DeleteAsync(entity);
+            await _deviceDAL.DeleteAsync(entity, cancellationToken);
 
             await _outboxService.AddMessageAsync(new DeviceDeletedEvent(entity.Id,entity.IpAddress,entity.DeviceName), cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result.Success();
         }
 
-        public async Task<Result<List<DeviceDTO>>> GetAllAsync()
+        public async Task<Result<List<DeviceDTO>>> GetAllAsync(CancellationToken cancellationToken)
         {
-            var devices = await _deviceDAL.GetAllAsync(x => x.IsActive);
+            var devices = await _deviceDAL.GetAllAsync(x => x.IsActive, cancellationToken);
 
            var dto = _mapper.Map<List<DeviceDTO>>(devices);
            return Result<List<DeviceDTO>>.Success(dto);
         }
 
-        public async Task<Result<DeviceDTO>> GetByIdAsync(int id)
+        public async Task<Result<DeviceDTO>> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
-            var device = await _deviceDAL.GetAsync(x => x.Id == id && x.IsActive);
+            var device = await _deviceDAL.GetAsync(x => x.Id == id && x.IsActive, cancellationToken);
 
             if (device == null)
                 return Result<DeviceDTO>.Failure("Device couldn't find.");

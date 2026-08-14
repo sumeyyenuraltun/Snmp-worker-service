@@ -20,16 +20,16 @@ namespace Snmp.Business.Queries.Concrete
             _mapper = mapper;
         }
 
-        public async Task<Result<List<DeviceParameterDTO>>> GetByDeviceIdAsync(int deviceId)
+        public async Task<Result<List<DeviceParameterDTO>>> GetByDeviceIdAsync(int deviceId, CancellationToken cancellationToken)
         {
-            var parameters =await _deviceParameterDAL.GetAllAsync(x => x.DeviceId == deviceId, x=> x.Parameter);
+            var parameters =await _deviceParameterDAL.GetAllAsync(x => x.DeviceId == deviceId,cancellationToken, x=> x.Parameter);
 
             return Result<List<DeviceParameterDTO>>.Success(_mapper.Map<List<DeviceParameterDTO>>(parameters));
         }
-        public async Task<Result<DeviceParameterDTO>> GetByDeviceIdAndParameterIdAsync(int deviceId,int parameterId)
+        public async Task<Result<DeviceParameterDTO>> GetByDeviceIdAndParameterIdAsync(int deviceId,int parameterId, CancellationToken cancellationToken)
         {
             var entity = await _deviceParameterDAL
-                .GetByDeviceIdAndParameterIdAsync(deviceId, parameterId);
+                .GetByDeviceIdAndParameterIdAsync(deviceId, parameterId, cancellationToken);
 
             if (entity == null)
                 return Result<DeviceParameterDTO>.Failure("Device parameter not found.");

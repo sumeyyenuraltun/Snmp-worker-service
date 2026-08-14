@@ -19,16 +19,18 @@ namespace SNMP.WebAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [Authorize(Roles = "Admin,User")]
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
-            var result = await _deviceService.GetAllAsync();
+            var result = await _deviceService.GetAllAsync(cancellationToken);
             return Ok(result.Value);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [Authorize(Roles = "Admin,User")]
+        public async Task<IActionResult> GetById(int id,CancellationToken cancellationToken)
         {
-            var result = await _deviceService.GetByIdAsync(id);
+            var result = await _deviceService.GetByIdAsync(id, cancellationToken);
 
             if (!result.IsSuccess)
                 return NotFound(result.Error);
@@ -37,6 +39,7 @@ namespace SNMP.WebAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Add([FromBody] AddDeviceDTO addDeviceDTO, CancellationToken cancellationToken)
         {
             var result = await _deviceService.AddAsync(addDeviceDTO, cancellationToken);
@@ -48,6 +51,7 @@ namespace SNMP.WebAPI.Controllers
         }
 
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update([FromBody] UpdateDeviceDTO updateDeviceDTO, CancellationToken cancellationToken)
         {
             var result = await _deviceService.UpdateAsync(updateDeviceDTO, cancellationToken);
@@ -59,6 +63,7 @@ namespace SNMP.WebAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             var result = await _deviceService.DeleteAsync(id, cancellationToken);

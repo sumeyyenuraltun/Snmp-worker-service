@@ -20,9 +20,9 @@ namespace Snmp.Business.Queries.Concrete
             _mapper = mapper;
         }
 
-        public async Task<Result<SnmpCredentialDTO>> GetByDeviceIdAsync(int deviceId)
+        public async Task<Result<SnmpCredentialDTO>> GetByDeviceIdAsync(int deviceId, CancellationToken cancellationToken)
         {
-            var credential = await _snmpCredentialDAL.GetAsync(x =>x.DeviceId == deviceId);
+            var credential = await _snmpCredentialDAL.GetAsync(x =>x.DeviceId == deviceId, cancellationToken);
 
             if(credential == null)
             {

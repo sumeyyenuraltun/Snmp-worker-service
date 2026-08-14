@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using Snmp.Business.Abstract.Security;
 using Snmp.Business.DTOs.User;
 using Snmp.Common.Configuration;
+using SNMP.ENTITY.Concrete;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -25,7 +26,8 @@ namespace Snmp.Business.Concrete.Security
             {
                 new Claim(ClaimTypes.NameIdentifier, userAuthDTO.Id.ToString()),
                 new Claim(ClaimTypes.Name, userAuthDTO.Username),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Role, userAuthDTO.RoleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));

@@ -28,9 +28,9 @@ namespace Snmp.Business.Concrete.DeviceService
             _redisService = redisService;
         }
 
-        public async Task<Result<List<DeviceParameterDTO>>> GetByDeviceIdAsync(int deviceId)
+        public async Task<Result<List<DeviceParameterDTO>>> GetByDeviceIdAsync(int deviceId, CancellationToken cancellationToken)
         {
-            var entities = await _deviceParameterDAL.GetByDeviceIdAsync(deviceId);
+            var entities = await _deviceParameterDAL.GetByDeviceIdAsync(deviceId,cancellationToken);
 
             var dto = _mapper.Map<List<DeviceParameterDTO>>(entities);
 
@@ -52,7 +52,7 @@ namespace Snmp.Business.Concrete.DeviceService
 
         public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken)
         {
-            var entity = await _deviceParameterDAL.GetByIdAsync(id);
+            var entity = await _deviceParameterDAL.GetByIdAsync(id, cancellationToken);
             var deviceId = entity!.DeviceId;
 
             if (entity == null)
@@ -68,7 +68,7 @@ namespace Snmp.Business.Concrete.DeviceService
         }
         public async Task<Result> UpdateAsync(UpdateDeviceParameterDTO updateDeviceParameterDTO, CancellationToken cancellationToken)
         {
-            var entity = await _deviceParameterDAL.GetByIdAsync(updateDeviceParameterDTO.Id);
+            var entity = await _deviceParameterDAL.GetByIdAsync(updateDeviceParameterDTO.Id,cancellationToken);
 
             if (entity == null)
                 return Result.Failure("Device parameter not found.");
@@ -84,9 +84,9 @@ namespace Snmp.Business.Concrete.DeviceService
             return Result.Success();
 
         }
-        public async Task<Result<DeviceParameterDTO>> GetByIdAsync(int id)
+        public async Task<Result<DeviceParameterDTO>> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
-            var entity = await _deviceParameterDAL.GetAsync(x => x.Id == id,x => x.Parameter);
+            var entity = await _deviceParameterDAL.GetAsync(x => x.Id == id,cancellationToken,x => x.Parameter);
 
             if (entity == null)
                 return Result<DeviceParameterDTO>.Failure("Device parameter not found.");

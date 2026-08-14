@@ -9,7 +9,7 @@ namespace Snmp.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Admin,User")]
     public class PollingController : ControllerBase
     {
         private readonly IPollingService _pollingService;

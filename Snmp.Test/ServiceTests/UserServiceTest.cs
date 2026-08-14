@@ -17,6 +17,7 @@ namespace Snmp.Test.ServiceTests
         private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly Mock<IPasswordHasher> _passwordHasherMock;
+        private readonly Mock<IRoleDAL> _roleDalMock;
 
         private readonly UserService _userService;
         public UserServiceTest()
@@ -25,12 +26,14 @@ namespace Snmp.Test.ServiceTests
             _mapperMock = new Mock<IMapper>();
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _passwordHasherMock = new Mock<IPasswordHasher>();
+            _roleDalMock = new Mock<IRoleDAL>();
 
             _userService = new UserService(
                 _userDalMock.Object,
                 _mapperMock.Object,
                 _unitOfWorkMock.Object,
-                _passwordHasherMock.Object);
+                _passwordHasherMock.Object,
+                _roleDalMock.Object);
         }
 
         [Fact]
@@ -39,7 +42,7 @@ namespace Snmp.Test.ServiceTests
         {
             // Arrange
             var registerRequestDTO = new RegisterRequestDTO { Username = "sumeyye", Password = "şifre123" };
-            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync(new User());
+            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync(new User());
             // Act
             var result = await _userService.AddAsync(registerRequestDTO, CancellationToken.None);
             // Assert
@@ -64,7 +67,7 @@ namespace Snmp.Test.ServiceTests
 
             var user = new User();
 
-            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync((User?)null);
+            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync((User?)null);
 
             _mapperMock.Setup(x => x.Map<User>(registerRequestDTO)).Returns(user);
 
@@ -91,7 +94,7 @@ namespace Snmp.Test.ServiceTests
             //Arrange
             var updateUserDTO = new UpdateUserDTO { Id = 1, Username = "sumeyye", Password = "şifre123" };
 
-            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync((User?)null);
+            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync((User?)null);
 
             //Act
             var result = await _userService.UpdateAsync(updateUserDTO, CancellationToken.None);
@@ -114,7 +117,7 @@ namespace Snmp.Test.ServiceTests
 
             var anotherUser = new User { Id = 2, Username = "sumeyye" };
 
-            _userDalMock.SetupSequence(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>()))
+            _userDalMock.SetupSequence(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>()))
                 .ReturnsAsync(existingUser)
                 .ReturnsAsync(anotherUser);
 
@@ -143,7 +146,7 @@ namespace Snmp.Test.ServiceTests
                 PasswordHash = "oldPasswordHash"
             };
 
-            _userDalMock.SetupSequence(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>()))
+            _userDalMock.SetupSequence(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>()))
                 .ReturnsAsync(user)
                 .ReturnsAsync((User?)null);
 
@@ -185,7 +188,7 @@ namespace Snmp.Test.ServiceTests
                 PasswordHash = "oldPasswordHash"
             };
 
-            _userDalMock.SetupSequence(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>()))
+            _userDalMock.SetupSequence(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>()))
                 .ReturnsAsync(user)
                 .ReturnsAsync((User?)null);
 
@@ -210,7 +213,7 @@ namespace Snmp.Test.ServiceTests
         {
             //Arrange
             int userId = 1;
-            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync((User?)null);
+            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync((User?)null);
             //Act
             var result = await _userService.DeleteAsync(userId, CancellationToken.None);
             //Assert
@@ -226,7 +229,7 @@ namespace Snmp.Test.ServiceTests
             //Arrange
             int userId = 1;
             var user = new User { Id = userId, Username = "sumeyye", IsActive = true };
-            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync(user);
+            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync(user);
             //Act
             var result = await _userService.DeleteAsync(userId, CancellationToken.None);
             //Assert
@@ -244,9 +247,9 @@ namespace Snmp.Test.ServiceTests
         {
             //Arrange
             int userId = 1;
-            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync((User?)null);
+            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync((User?)null);
             //Act
-            var result = await _userService.GetByIdAsync(userId);
+            var result = await _userService.GetByIdAsync(userId, CancellationToken.None);
             //Assert
             Assert.False(result.IsSuccess);
             Assert.Equal("User not found.", result.Error);
@@ -265,13 +268,13 @@ namespace Snmp.Test.ServiceTests
 
             var userDTO = new UserDTO { Id = userId, Username = "sumeyye" };
 
-            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync(user);
+            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync(user);
 
             _mapperMock.Setup(x => x.Map<UserDTO>(user)).Returns(userDTO);
 
             //Act
 
-            var result = await _userService.GetByIdAsync(userId);
+            var result = await _userService.GetByIdAsync(userId, CancellationToken.None);
 
             //Assert 
             Assert.True(result.IsSuccess);
@@ -318,12 +321,12 @@ namespace Snmp.Test.ServiceTests
 
             };
 
-            _userDalMock.Setup(x => x.GetAllAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync(users);
+            _userDalMock.Setup(x => x.GetAllAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync(users);
 
             _mapperMock.Setup(x => x.Map<List<UserDTO>>(users)).Returns(userDtos);
 
             //Act
-            var result = await _userService.GetAllAsync();
+            var result = await _userService.GetAllAsync(CancellationToken.None);
 
             //Assert 
             Assert.True(result.IsSuccess);
@@ -343,9 +346,9 @@ namespace Snmp.Test.ServiceTests
         {
             //Arrange
             string username = "sumeyye";
-            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync((User?)null);
+            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync((User?)null);
             //Act
-            var result = await _userService.GetByUsernameAsync(username);
+            var result = await _userService.GetByUsernameAsync(username, CancellationToken.None);
             //Assert
             Assert.False(result.IsSuccess);
             Assert.Equal("User not found.", result.Error);
@@ -374,12 +377,12 @@ namespace Snmp.Test.ServiceTests
                 PasswordHash = "hashedPassword"
             };
 
-            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync(user);
+            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(),It.IsAny<CancellationToken>(),It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync(user);
 
             _mapperMock.Setup(x => x.Map<UserAuthDTO>(user)).Returns(userAuthDto);
 
             //Act 
-            var result = await _userService.GetByUsernameAsync(username);
+            var result = await _userService.GetByUsernameAsync(username, CancellationToken.None);
 
             //Assert 
             Assert.True(result.IsSuccess);
@@ -399,12 +402,12 @@ namespace Snmp.Test.ServiceTests
             //Arrange 
             string refreshToken = "refresh-token";
 
-            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(),
+            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(),
                 It.IsAny<Expression<Func<User, object>>[]>()))
                 .ReturnsAsync((User?)null);
 
             //Act
-            var result = await _userService.GetByRefreshTokenAsync(refreshToken);
+            var result = await _userService.GetByRefreshTokenAsync(refreshToken, CancellationToken.None);
 
             //Assert
             Assert.False(result.IsSuccess);
@@ -437,14 +440,14 @@ namespace Snmp.Test.ServiceTests
                 RefreshToken = refreshToken
             };
 
-            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>()))
+            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>()))
                 .ReturnsAsync(user);
 
 
             _mapperMock.Setup(x => x.Map<UserAuthDTO>(user)).Returns(userAuthDto);
 
             //Act 
-            var result = await _userService.GetByRefreshTokenAsync(refreshToken);
+            var result = await _userService.GetByRefreshTokenAsync(refreshToken, CancellationToken.None);
 
             //Assert
             Assert.True(result.IsSuccess);
@@ -463,7 +466,7 @@ namespace Snmp.Test.ServiceTests
         {
             //Arrange
             int userId = 1;
-            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>()))
+            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>()))
                 .ReturnsAsync((User?)null);
             //Act
             var result = await _userService.ClearRefreshTokenAsync(userId, CancellationToken.None);
@@ -480,7 +483,7 @@ namespace Snmp.Test.ServiceTests
             //Arrange
             int userId = 1;
             var user = new User { Id = userId, Username = "sumeyye", RefreshToken = "refresh-token", RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7)};
-            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>()))
+            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>()))
                 .ReturnsAsync(user);
             //Act
             var result = await _userService.ClearRefreshTokenAsync(userId, CancellationToken.None);
@@ -505,7 +508,7 @@ namespace Snmp.Test.ServiceTests
             string refreshToken = "new-refresh-token";
             DateTime expiryTime = DateTime.UtcNow.AddDays(7);
 
-            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<Expression<Func<User, object>>[]>()))
+            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>()))
                 .ReturnsAsync((User?)null);
 
             //Act
@@ -537,7 +540,7 @@ namespace Snmp.Test.ServiceTests
                 IsActive = true
             };
 
-            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(),
+            _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(),
                 It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync(user);
                 
             //Act

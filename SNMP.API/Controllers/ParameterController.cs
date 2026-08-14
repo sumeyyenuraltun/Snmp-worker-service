@@ -18,9 +18,10 @@ namespace Snmp.WebAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [Authorize(Roles = "Admin,User")]
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
-            var result = await _parameterService.GetAllAsync();
+            var result = await _parameterService.GetAllAsync(cancellationToken);
 
             if (!result.IsSuccess)
                 return BadRequest(result.Error);
@@ -29,9 +30,10 @@ namespace Snmp.WebAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [Authorize(Roles = "Admin,User")]
+        public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         {
-            var result = await _parameterService.GetByIdAsync(id);
+            var result = await _parameterService.GetByIdAsync(id, cancellationToken);
 
             if (!result.IsSuccess)
                 return NotFound(result.Error);
@@ -40,6 +42,7 @@ namespace Snmp.WebAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Add([FromBody] AddParameterDTO addParameterDTO, CancellationToken cancellationToken)
         {
             var result = await _parameterService.AddAsync(addParameterDTO, cancellationToken);
@@ -51,6 +54,7 @@ namespace Snmp.WebAPI.Controllers
         }
 
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update([FromBody] UpdateParameterDTO updateParameterDTO, CancellationToken cancellationToken)
         {
             var result = await _parameterService.UpdateAsync(updateParameterDTO, cancellationToken);
@@ -62,6 +66,7 @@ namespace Snmp.WebAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             var result = await _parameterService.DeleteAsync(id, cancellationToken);

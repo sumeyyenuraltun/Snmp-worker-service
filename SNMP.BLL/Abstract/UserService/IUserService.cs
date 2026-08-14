@@ -16,12 +16,12 @@ namespace Snmp.Business.Abstract.UserService
 
         Task<Result> DeleteAsync(int id, CancellationToken cancellationToken);
 
-        Task<Result<List<UserDTO>>> GetAllAsync();
+        Task<Result<List<UserDTO>>> GetAllAsync(CancellationToken cancellationToken);
 
-        Task<Result<UserDTO>> GetByIdAsync(int id);
-        Task<Result<UserAuthDTO>> GetByUsernameAsync(string username);
+        Task<Result<UserDTO>> GetByIdAsync(int id, CancellationToken cancellationToken);
+        Task<Result<UserAuthDTO>> GetByUsernameAsync(string username , CancellationToken cancellationToken);
         Task<Result> UpdateRefreshTokenAsync(int userId,string refreshToken,DateTime expiryTime,CancellationToken cancellationToken);
-        Task<Result<UserAuthDTO>> GetByRefreshTokenAsync(string refreshToken);
+        Task<Result<UserAuthDTO>> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken);
         Task<Result> ClearRefreshTokenAsync(int userId,CancellationToken cancellationToken);
     }
 }
