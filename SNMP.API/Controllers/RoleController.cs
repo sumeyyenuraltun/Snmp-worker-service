@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Snmp.Business.Abstract.UserService;
+using Snmp.Business.Abstract.RoleService;
 using Snmp.Business.DTOs.Role;
 
 namespace Snmp.WebAPI.Controllers

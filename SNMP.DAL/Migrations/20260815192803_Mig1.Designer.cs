@@ -12,8 +12,8 @@ using SNMP.DAL.Context;
 namespace Snmp.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260812072848_Mig-10")]
-    partial class Mig10
+    [Migration("20260815192803_Mig1")]
+    partial class Mig1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -124,6 +124,22 @@ namespace Snmp.DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2026, 8, 12, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Name = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2026, 8, 12, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Name = "User"
+                        });
                 });
 
             modelBuilder.Entity("SNMP.ENTITY.Concrete.SnmpCredential", b =>
@@ -277,9 +293,8 @@ namespace Snmp.DataAccess.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DataType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("DataType")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -337,7 +352,7 @@ namespace Snmp.DataAccess.Migrations
                     b.HasOne("Snmp.Entity.Concrete.Parameter", "Parameter")
                         .WithMany("DeviceParametres")
                         .HasForeignKey("ParameterId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Device");

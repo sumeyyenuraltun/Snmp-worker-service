@@ -60,7 +60,8 @@ namespace Snmp.EventWorker.Snmp.Clients
 
             var variables = new List<Variable>
             {
-                new(new ObjectIdentifier(request.Oid), new OctetString(request.Value ?? string.Empty))
+                 new(new ObjectIdentifier(request.Oid),
+                      SnmpDataFactory.Create(request))
             };
 
             var message = new SetRequestMessage(

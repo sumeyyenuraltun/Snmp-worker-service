@@ -11,6 +11,7 @@ using Snmp.Business.Abstract.Auth;
 using Snmp.Business.Abstract.DeviceService;
 using Snmp.Business.Abstract.Outbox;
 using Snmp.Business.Abstract.Redis;
+using Snmp.Business.Abstract.RoleService;
 using Snmp.Business.Abstract.Security;
 using Snmp.Business.Abstract.Snmp;
 using Snmp.Business.Abstract.UserService;
@@ -18,6 +19,7 @@ using Snmp.Business.Concrete;
 using Snmp.Business.Concrete.Auth;
 using Snmp.Business.Concrete.DeviceService;
 using Snmp.Business.Concrete.Outbox;
+using Snmp.Business.Concrete.RoleService;
 using Snmp.Business.Concrete.Security;
 using Snmp.Business.Concrete.SnmpService;
 using Snmp.Business.Concrete.UserService;
@@ -181,6 +183,11 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     var configuration = builder.Configuration.GetConnectionString("Redis");
 
     return ConnectionMultiplexer.Connect(configuration);
+});
+
+builder.Services.Configure<HostOptions>(options =>
+{
+    options.ShutdownTimeout = TimeSpan.FromSeconds(30);
 });
 var app = builder.Build();
 

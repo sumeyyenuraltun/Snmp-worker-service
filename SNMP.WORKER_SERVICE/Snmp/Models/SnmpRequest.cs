@@ -1,4 +1,5 @@
 ﻿using Snmp.Business.DTOs.SnmpCredentials;
+using SNMP.ENTITY.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,6 +14,6 @@ namespace Snmp.EventWorker.Snmp.Models
         public SnmpCredentialDTO Credential { get; set; } = null!;
         public string? Value { get; set; }
         public int TimeoutMilliseconds { get; set; } = 5000;
-
+        public SnmpDataType DataType { get; set; }
     }
 }

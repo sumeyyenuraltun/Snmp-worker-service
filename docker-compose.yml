@@ -58,7 +58,19 @@ services:
       - 5601:5601 
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: snmp-redisinsight
+    restart: unless-stopped
 
+    ports:
+      - "5540:5540"
+
+    depends_on:
+      - redis
+
+    volumes:
+      - redisinsight-data:/data
 
 
 
@@ -66,3 +78,4 @@ volumes:
   rabbitmq-data:
   redis-data:
   elasticsearch-data:
+  redisinsight-data:

@@ -94,15 +94,10 @@ namespace Snmp.EventWorker.Snmp.Polling
                         IpAddress = configuration.IpAddress,
                         Port = configuration.Port,
                         Oid = parameter.Oid,
-                        Credential = configuration.Credential
+                        Credential = configuration.Credential,
+                        DataType = parameter.DataType,
                     };
-                    _logger.LogInformation(
-    "POLLING -> IP:{Ip}, User:{User}, Auth:{Auth}, Privacy:{Privacy}, OID:{Oid}",
-    request.IpAddress,
-    request.Credential.UserName,
-    request.Credential.AuthProtocol,
-    request.Credential.PrivacyProtocol,
-    request.Oid);
+                   
                     var result = await snmpService.GetAsync(request, token);
 
                     if (result != null)
@@ -124,23 +119,33 @@ namespace Snmp.EventWorker.Snmp.Polling
             }
             catch (OperationCanceledException)
             {
+                _logger.LogInformation( "Polling cancelled. DeviceId:{DeviceId}, OID:{Oid}",deviceId, parameter.Oid);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex,"Polling failed. DeviceId:{DeviceId}, OID:{Oid}", deviceId,parameter.Oid);
             }
         }
-        public Task StopAsync(int deviceId)
+        public async Task StopAsync(int deviceId)
         {
             if (_sessions.TryRemove(deviceId, out var session))
             {
                 session.CancellationTokenSource.Cancel();
+
+                try
+                {
+                    await Task.WhenAll(session.RunningTasks);
+                }
+                catch (OperationCanceledException)
+                {
+                }
+
                 session.CancellationTokenSource.Dispose();
 
-                _logger.LogInformation("Polling stopped. DeviceId:{DeviceId}", deviceId);
+                _logger.LogInformation(
+                    "Polling stopped. DeviceId:{DeviceId}",
+                    deviceId);
             }
-
-            return Task.CompletedTask;
         }
         public async Task RestartAsync(int deviceId, CancellationToken cancellationToken)
         {
@@ -158,6 +163,19 @@ namespace Snmp.EventWorker.Snmp.Polling
             await StartAsync(new DevicePollingStartedEvent(deviceId), cancellationToken);
 
             _logger.LogInformation( "Polling restarted. DeviceId:{DeviceId}",deviceId);
+        }
+        public async Task StopAllAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Stopping all polling sessions...");
+
+            var deviceIds = _sessions.Keys.ToList();
+
+            foreach (var deviceId in deviceIds)
+            {
+                await Task.WhenAll(deviceIds.Select(StopAsync));
+            }
+
+            _logger.LogInformation("All polling sessions stopped.");
         }
     }
 }

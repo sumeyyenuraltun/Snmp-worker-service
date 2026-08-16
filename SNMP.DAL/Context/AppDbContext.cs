@@ -16,21 +16,40 @@ namespace SNMP.DAL.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Device>()
+                .HasMany(d => d.Credentials)
+                .WithOne(c => c.Device)
+                .HasForeignKey(c => c.DeviceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DeviceParameter>()
+                .HasOne(dp => dp.Device)
+                .WithMany(d => d.DeviceParametres)
+                .HasForeignKey(dp => dp.DeviceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DeviceParameter>()
+                .HasOne(dp => dp.Parameter)
+                .WithMany(p => p.DeviceParametres)
+                .HasForeignKey(dp => dp.ParameterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<Role>().HasData(
-    new Role
-    {
-        Id = 1,
-        Name = "Admin",
-        CreatedAt = new DateTime(2026, 8, 12, 0, 0, 0, DateTimeKind.Utc),
-        IsActive = true
-    },
-    new Role
-    {
-        Id = 2,
-        Name = "User",
-        CreatedAt = new DateTime(2026, 8, 12, 0, 0, 0, DateTimeKind.Utc),
-        IsActive = true
-    });
+                new Role
+                {
+                   Id = 1,
+                   Name = "Admin",
+                   CreatedAt = new DateTime(2026, 8, 12, 0, 0, 0, DateTimeKind.Utc),
+                   IsActive = true
+                },
+               new Role
+                {
+                   Id = 2,
+                   Name = "User",
+                   CreatedAt = new DateTime(2026, 8, 12, 0, 0, 0, DateTimeKind.Utc),
+                   IsActive = true
+                });
         }
 
         public DbSet<Device> Devices { get; set; }

@@ -27,13 +27,6 @@ namespace Snmp.Business.Concrete.DeviceService
 
         public async Task<Result> AddAsync(AddSnmpCredentialDTO dto, CancellationToken cancellationToken)
         {
-            var exists = await _snmpCredentialDAL.GetAsync(x =>
-                x.DeviceId == dto.DeviceId &&
-                x.IsActive, cancellationToken);
-
-            if (exists != null)
-                return Result.Failure("SNMP credentials already exist for this device.");
-
             var entity = _mapper.Map<SnmpCredential>(dto);
 
             await _snmpCredentialDAL.AddAsync(entity, cancellationToken);

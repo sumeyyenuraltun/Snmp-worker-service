@@ -23,10 +23,6 @@ namespace Snmp.Business.ValidationRules.Parameter
                 .Matches(@"^\.?(\d+\.)*\d+$")
                 .WithMessage("Invalid OID format.");
 
-            RuleFor(x => x.DataType)
-                .NotEmpty().WithMessage("Data type is required.")
-                .MaximumLength(50);
-
             RuleFor(x => x.Unit)
                 .NotEmpty().WithMessage("Unit is required.")
                 .MaximumLength(50);

@@ -11,5 +11,6 @@ namespace Snmp.EventWorker.Snmp.Polling
         Task StopAsync(int deviceId);
         bool IsRunning(int deviceId);
         Task RestartAsync(int deviceId, CancellationToken cancellationToken);
+        Task StopAllAsync(CancellationToken cancellationToken);
     }
 }

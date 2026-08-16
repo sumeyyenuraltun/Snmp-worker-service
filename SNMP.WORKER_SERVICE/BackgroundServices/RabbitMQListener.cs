@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using Snmp.EventWorker.Strategies;
-using System.Text.Json;
 using Serilog.Context;
 using Snmp.Common.Configuration;
+using Snmp.EventWorker.Snmp.Polling;
+using Snmp.EventWorker.Strategies;
+using System.Text;
+using System.Text.Json;
 
 namespace Snmp.EventWorker.BackgroundServices
 {
@@ -16,7 +18,8 @@ namespace Snmp.EventWorker.BackgroundServices
         private IChannel? _channel;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
         private readonly IServiceScopeFactory _scopeFactory;
-        public RabbitMQListener(ILogger<RabbitMQListener> logger, IOptions<RabbitMQSetting> settings, IServiceScopeFactory scopeFactory)
+        private readonly IPollingManager _pollingManager;
+        public RabbitMQListener(ILogger<RabbitMQListener> logger, IOptions<RabbitMQSetting> settings, IServiceScopeFactory scopeFactory, IPollingManager pollingManager)
         {
             _logger = logger;
             _settings = settings.Value;
@@ -26,6 +29,7 @@ namespace Snmp.EventWorker.BackgroundServices
                 PropertyNameCaseInsensitive = true
             };
             _scopeFactory = scopeFactory;
+            _pollingManager = pollingManager;
         }
 
         private async Task InitializeRabbitMqAsync(CancellationToken cancellationToken)
@@ -117,52 +121,70 @@ namespace Snmp.EventWorker.BackgroundServices
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("RabbitMQEventConsumerService is starting");
-
-            await InitializeRabbitMqAsync(stoppingToken);
-
-            if (_channel == null)
+            try
             {
-                _logger.LogError("RabbitMQ channel is not initialized.");
-                return;
+                _logger.LogInformation("RabbitMQEventConsumerService is starting");
+
+                await InitializeRabbitMqAsync(stoppingToken);
+
+                if (_channel == null)
+                {
+                    _logger.LogError("RabbitMQ channel is not initialized.");
+                    return;
+                }
+
+                _logger.LogInformation("RabbitMQEventConsumerService has started.");
+
+                var consumer = new AsyncEventingBasicConsumer(_channel);
+
+                consumer.ReceivedAsync += async (model, ea) =>
+                {
+                    try
+                    {
+                        var body = ea.Body.ToArray();
+                        var message = Encoding.UTF8.GetString(body);
+                        var routingKey = ea.RoutingKey;
+
+                        _logger.LogDebug(
+                            "Received message with RoutingKey : {RoutingKey}, Body: {Body}",
+                            routingKey,
+                            message);
+
+                        await ProcessEventAsync(message, routingKey, stoppingToken);
+
+                        await _channel.BasicAckAsync(ea.DeliveryTag, false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error in consumer received event");
+                    }
+                };
+
+                await _channel.BasicConsumeAsync(
+                    queue: _settings.QueueName,
+                    autoAck: false,
+                    consumer: consumer,
+                    cancellationToken: stoppingToken);
+
+                _logger.LogInformation(
+                    "RabbitMQEventConsumerService is consuming from queue : {QueueName}",
+                    _settings.QueueName);
+
+                await Task.Delay(Timeout.Infinite, stoppingToken);
             }
-            _logger.LogInformation("RabbitMQEventConsumerService has started.");
-
-            var consumer = new AsyncEventingBasicConsumer(_channel);
-            consumer.ReceivedAsync += async (model, ea) =>
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
-                try
-                {
-                    var body = ea.Body.ToArray();
-                    var message = System.Text.Encoding.UTF8.GetString(body);
-                    var routingKey = ea.RoutingKey;
-                    _logger.LogDebug("Received message with RoutingKey : {RoutingKey}, Body: {Body}", routingKey, message);
-                    await ProcessEventAsync(message, routingKey, stoppingToken);
-                    await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error in consumer received event");
-                }
-
-            };
-
-            await _channel.BasicConsumeAsync(
-                queue: _settings.QueueName,
-                autoAck: false,
-                consumer: consumer,
-                cancellationToken: stoppingToken
-                );
-
-            _logger.LogInformation("RabbitMQEventConsumerService is consuming from queue : {QueueName}", _settings.QueueName);
-
-            await Task.Delay(Timeout.Infinite, stoppingToken);
-
+                _logger.LogInformation("RabbitMQ listener cancellation requested.");
+            }
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("RabbitMQEventConsumerService is stopping");
+
+            await _pollingManager.StopAllAsync(cancellationToken);
+
+            await base.StopAsync(cancellationToken);
 
             if (_channel != null)
             {
@@ -175,8 +197,6 @@ namespace Snmp.EventWorker.BackgroundServices
                 await _connection.CloseAsync(cancellationToken);
                 await _connection.DisposeAsync();
             }
-
-            await base.StopAsync(cancellationToken);
 
             _logger.LogInformation("RabbitMQEventConsumerService has stopped");
         }

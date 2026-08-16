@@ -68,7 +68,7 @@ namespace Snmp.Test.ServiceTests
             var user = new User();
 
             _userDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>())).ReturnsAsync((User?)null);
-
+            _roleDalMock.Setup(x => x.GetAsync(It.IsAny<Expression<Func<Role, bool>>>(), It.IsAny<CancellationToken>(),It.IsAny<Expression<Func<Role, object>>[]>())).ReturnsAsync(new Role{Id = 2,Name = "User",IsActive = true});
             _mapperMock.Setup(x => x.Map<User>(registerRequestDTO)).Returns(user);
 
             _passwordHasherMock.Setup(x => x.Hash(registerRequestDTO.Password)).Returns("hashedPassword");
@@ -76,7 +76,7 @@ namespace Snmp.Test.ServiceTests
             //Act
 
             var result = await _userService.AddAsync(registerRequestDTO, CancellationToken.None);
-
+            
             //Assert 
             Assert.True(result.IsSuccess);
             Assert.Null(result.Error);
@@ -87,6 +87,31 @@ namespace Snmp.Test.ServiceTests
 
             _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
 
+        }
+        [Fact]
+        public async Task AddAsync_ShouldReturnFailure_WhenDefaultRoleNotFound()
+        {
+            // Arrange
+            var registerRequestDTO = new RegisterRequestDTO
+            {
+                Username = "sumeyye123",
+                Password = "şifre"
+            };
+
+            _userDalMock.Setup(x => x.GetAsync( It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<Expression<Func<User, object>>[]>())) .ReturnsAsync((User?)null);
+
+            _roleDalMock.Setup(x => x.GetAsync( It.IsAny<Expression<Func<Role, bool>>>(), It.IsAny<CancellationToken>(),It.IsAny<Expression<Func<Role, object>>[]>())).ReturnsAsync((Role?)null);
+
+            // Act
+            var result = await _userService.AddAsync(registerRequestDTO, CancellationToken.None);
+
+            // Assert
+            Assert.False(result.IsSuccess);
+            Assert.Equal("Default role not found", result.Error);
+
+            _userDalMock.Verify( x => x.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Never);
+
+            _unitOfWorkMock.Verify( x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
         [Fact]
         public async Task UpdateAsync_ShouldReturnFailure_WhenUserNotFound()

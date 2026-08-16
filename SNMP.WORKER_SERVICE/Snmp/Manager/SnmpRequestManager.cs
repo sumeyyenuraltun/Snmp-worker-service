@@ -125,13 +125,7 @@ namespace Snmp.EventWorker.Snmp.Manager
                 throw new Exception($"DeviceParameter not found. DeviceId:{deviceId}, ParameterId:{parameterId}");
 
             var parameter = parameterResult.Value;
-            _logger.LogInformation(
-    "MANUAL -> IP:{Ip}, User:{User}, Sec:{Sec}, Auth:{Auth}, Priv:{Priv}",
-    device.IpAddress,
-    credential.UserName,
-    credential.SecurityLevel,
-    credential.AuthProtocol,
-    credential.PrivacyProtocol);
+            
             return new SnmpRequest
             {
                 IpAddress = device.IpAddress,
@@ -150,7 +144,8 @@ namespace Snmp.EventWorker.Snmp.Manager
                     PrivacyProtocol = credential.PrivacyProtocol,
                     AuthPassword = credential.AuthPassword,
                     PrivacyPassword = credential.PrivacyPassword
-                }
+                },
+                DataType = parameter.DataType,
             };
         }
     }

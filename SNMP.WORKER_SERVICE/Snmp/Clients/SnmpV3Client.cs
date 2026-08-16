@@ -61,9 +61,10 @@ namespace Snmp.EventWorker.Snmp.Clients
             var report = Discover(SnmpType.SetRequestPdu, request, endpoint);
 
             var variables = new List<Variable>
-            {
-                new(new ObjectIdentifier(request.Oid), new OctetString(request.Value ?? string.Empty))
-            };
+           {
+                new(new ObjectIdentifier(request.Oid),
+                  SnmpDataFactory.Create(request))
+           };
 
             var message = new SetRequestMessage(
                 VersionCode.V3,
@@ -165,6 +166,7 @@ namespace Snmp.EventWorker.Snmp.Clients
                 ? pdu.Variables[0].Data.ToString()
                 : null;
         }
+        
     }
 }
 

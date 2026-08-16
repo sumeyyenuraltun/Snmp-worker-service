@@ -185,8 +185,7 @@ namespace Snmp.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DeviceId")
-                        .IsUnique();
+                    b.HasIndex("DeviceId");
 
                     b.ToTable("SnmpCredentials");
                 });
@@ -290,9 +289,8 @@ namespace Snmp.DataAccess.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DataType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("DataType")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -320,8 +318,8 @@ namespace Snmp.DataAccess.Migrations
             modelBuilder.Entity("SNMP.ENTITY.Concrete.SnmpCredential", b =>
                 {
                     b.HasOne("SNMP.ENTITY.Concrete.Device", "Device")
-                        .WithOne("Credential")
-                        .HasForeignKey("SNMP.ENTITY.Concrete.SnmpCredential", "DeviceId")
+                        .WithMany("Credentials")
+                        .HasForeignKey("DeviceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -350,7 +348,7 @@ namespace Snmp.DataAccess.Migrations
                     b.HasOne("Snmp.Entity.Concrete.Parameter", "Parameter")
                         .WithMany("DeviceParametres")
                         .HasForeignKey("ParameterId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Device");
@@ -360,8 +358,7 @@ namespace Snmp.DataAccess.Migrations
 
             modelBuilder.Entity("SNMP.ENTITY.Concrete.Device", b =>
                 {
-                    b.Navigation("Credential")
-                        .IsRequired();
+                    b.Navigation("Credentials");
 
                     b.Navigation("DeviceParametres");
                 });

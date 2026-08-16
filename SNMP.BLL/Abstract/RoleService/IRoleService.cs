@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Snmp.Business.Abstract.UserService
+namespace Snmp.Business.Abstract.RoleService
 {
     public interface IRoleService
     {

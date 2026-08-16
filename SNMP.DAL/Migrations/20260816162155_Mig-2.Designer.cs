@@ -12,8 +12,8 @@ using SNMP.DAL.Context;
 namespace Snmp.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260812072547_Mig-9")]
-    partial class Mig9
+    [Migration("20260816162155_Mig-2")]
+    partial class Mig2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -123,7 +123,23 @@ namespace Snmp.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Role");
+                    b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2026, 8, 12, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Name = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2026, 8, 12, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Name = "User"
+                        });
                 });
 
             modelBuilder.Entity("SNMP.ENTITY.Concrete.SnmpCredential", b =>
@@ -172,8 +188,7 @@ namespace Snmp.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DeviceId")
-                        .IsUnique();
+                    b.HasIndex("DeviceId");
 
                     b.ToTable("SnmpCredentials");
                 });
@@ -277,9 +292,8 @@ namespace Snmp.DataAccess.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DataType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("DataType")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -307,8 +321,8 @@ namespace Snmp.DataAccess.Migrations
             modelBuilder.Entity("SNMP.ENTITY.Concrete.SnmpCredential", b =>
                 {
                     b.HasOne("SNMP.ENTITY.Concrete.Device", "Device")
-                        .WithOne("Credential")
-                        .HasForeignKey("SNMP.ENTITY.Concrete.SnmpCredential", "DeviceId")
+                        .WithMany("Credentials")
+                        .HasForeignKey("DeviceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -337,7 +351,7 @@ namespace Snmp.DataAccess.Migrations
                     b.HasOne("Snmp.Entity.Concrete.Parameter", "Parameter")
                         .WithMany("DeviceParametres")
                         .HasForeignKey("ParameterId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Device");
@@ -347,8 +361,7 @@ namespace Snmp.DataAccess.Migrations
 
             modelBuilder.Entity("SNMP.ENTITY.Concrete.Device", b =>
                 {
-                    b.Navigation("Credential")
-                        .IsRequired();
+                    b.Navigation("Credentials");
 
                     b.Navigation("DeviceParametres");
                 });

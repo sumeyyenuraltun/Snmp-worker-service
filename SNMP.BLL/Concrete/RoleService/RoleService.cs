@@ -1,14 +1,12 @@
 ﻿using AutoMapper;
-using Snmp.Business.Abstract.UserService;
+using Snmp.Business.Abstract.RoleService;
 using Snmp.Business.DTOs.Role;
 using Snmp.Business.Results;
 using Snmp.DataAccess.Abstract;
 using SNMP.ENTITY.Concrete;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Snmp.Business.Concrete.UserService
+
+namespace Snmp.Business.Concrete.RoleService
 {
     public class RoleService : IRoleService
     {
